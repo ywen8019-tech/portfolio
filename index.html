@@ -1,0 +1,755 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>YW Portfolio System</title>
+<meta name="description" content="Yangfan Wen — game interaction design portfolio, played on a handheld console and a claw machine.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=DM+Sans:wght@300;400;500&family=Silkscreen&family=VT323&family=Noto+Sans+SC:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Layout: a three-object arcade table — cartridge rack (main quests) · handheld console (navigation) · claw machine (side quests) */
+:root{
+  color-scheme:dark;
+  --bg:#0c0b0a; --bg-2:#141210; --shell:#1d1a17; --shell-2:#2a2622; --edge:#3a342e;
+  --gold:#B9A88F; --gold-hi:#E2D6C2; --gold-deep:#7d6f5b;
+  --ink:#ECE8E1; --muted:#9a9084; --dim:#635b52;
+  --ph:#E9DFC9; --ph-dim:#8c8271; --ph-acc:#D8C08F; --scr:#11100d;
+  --serif:"Cormorant Garamond","Noto Sans SC",Georgia,serif;
+  --sans:"DM Sans","Noto Sans SC",system-ui,sans-serif;
+  --pix:"VT323","Noto Sans SC",ui-monospace,monospace;
+  --chip:"Silkscreen","Noto Sans SC",ui-monospace,monospace;
+  --ease:cubic-bezier(.22,.8,.2,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--ink)}
+body{font-family:var(--sans);font-weight:300;min-height:100vh;min-height:100svh;overflow-x:hidden;-webkit-font-smoothing:antialiased;
+  background:radial-gradient(70% 60% at 50% 38%,#1b1815 0%,var(--bg) 70%) fixed}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:300;opacity:.05;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:1px solid var(--gold-hi);outline-offset:3px}
+a{color:inherit}
+img{display:block;max-width:100%}
+[hidden]{display:none!important}
+
+/* ---------- top bar ---------- */
+.top{position:relative;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:18px max(20px,env(safe-area-inset-right,0px)) 0 max(20px,env(safe-area-inset-left,0px))}
+.brand{display:flex;align-items:baseline;gap:10px}
+.brand b{font-family:var(--serif);font-style:italic;font-weight:600;font-size:24px;color:var(--gold-hi)}
+.brand span{font-family:var(--chip);font-size:10px;letter-spacing:.14em;color:var(--muted)}
+.top-r{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.pill{font-family:var(--chip);font-size:10px;letter-spacing:.08em;border:1px solid var(--edge);border-radius:999px;padding:7px 12px;color:var(--ink);text-decoration:none;transition:.25s}
+.pill:hover{border-color:var(--gold);color:var(--gold-hi)}
+.pill[aria-pressed="false"]{color:var(--dim)}
+
+/* ---------- stage ---------- */
+.stage{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:clamp(20px,3vw,56px);
+  max-width:1360px;margin:0 auto;padding:28px max(20px,env(safe-area-inset-right,0px)) 18px max(20px,env(safe-area-inset-left,0px));min-height:calc(100svh - 120px)}
+.zone-label{font-family:var(--chip);font-size:10px;letter-spacing:.16em;color:var(--gold);display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.zone-label i{font-style:normal;color:var(--dim)}
+.zone-label::before{content:"";width:18px;height:1px;background:var(--gold)}
+
+/* ---------- cartridge rack ---------- */
+.rack{justify-self:end;width:min(100%,340px)}
+.carts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.cart{position:relative;aspect-ratio:.84;border-radius:7px 0 7px 7px;padding:22px 10px 12px;text-align:left;
+  background:linear-gradient(165deg,#2c2824,#1a1714 70%);box-shadow:inset 0 1px 0 rgba(255,255,255,.07),inset 0 0 0 1px rgba(226,214,194,.06),0 14px 26px rgba(0,0,0,.45);
+  clip-path:polygon(0 0,86% 0,100% 9%,100% 100%,0 100%);transition:transform .45s var(--ease),opacity .4s,filter .4s}
+.cart::before{content:"";position:absolute;left:10px;right:16%;top:7px;height:9px;background:repeating-linear-gradient(90deg,#3a352f 0 2px,transparent 2px 6px);opacity:.8}
+.cart-label{position:relative;display:block;height:calc(100% - 26px);border:1px solid rgba(185,168,143,.45);border-radius:3px;overflow:hidden;background:#0e0d0c}
+.cart-label img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity .5s}
+.cart-label .col{opacity:0}
+.cart-label::after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 40%,rgba(8,7,6,.85))}
+.cart-name{position:absolute;left:8px;right:8px;bottom:7px;z-index:2;font-family:var(--serif);font-size:15px;line-height:1.05;color:var(--gold-hi)}
+.cart-foot{display:flex;justify-content:space-between;align-items:center;margin-top:7px;font-family:var(--chip);font-size:9px;color:var(--gold-deep)}
+.cart:hover,.cart.hl{transform:translateY(-6px)}
+.cart:hover .col,.cart.hl .col{opacity:1}
+.cart.hl{box-shadow:inset 0 1px 0 rgba(255,255,255,.07),inset 0 0 0 1px rgba(226,214,194,.35),0 18px 30px rgba(0,0,0,.5)}
+.cart.out{opacity:.18;filter:grayscale(1);pointer-events:none}
+.rack-note{margin-top:14px;font-size:12px;color:var(--dim)}
+
+/* ---------- console ---------- */
+.console-wrap{position:relative;padding-top:64px}
+.console{position:relative;width:clamp(300px,27vw,372px);border-radius:22px 22px 78px 22px;padding:26px 24px 30px;
+  background:linear-gradient(158deg,#2a2622 0%,#191714 46%,#100f0d 100%);
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.07),inset 0 0 0 1px rgba(226,214,194,.07),inset -10px -14px 30px rgba(0,0,0,.45),0 50px 90px rgba(0,0,0,.65),0 0 0 1px #050404;transition:background .8s}
+.console::before{content:"";position:absolute;left:18px;right:18px;top:12px;height:1px;background:linear-gradient(90deg,transparent,rgba(226,214,194,.18),transparent)}
+.slot{position:absolute;left:50%;top:-6px;width:62%;height:12px;transform:translateX(-50%);border-radius:4px 4px 0 0;background:#070606;box-shadow:inset 0 2px 4px rgba(0,0,0,.9),0 -1px 0 rgba(226,214,194,.1)}
+.slot-cart{position:absolute;left:50%;bottom:calc(100% - 4px);width:56%;height:78px;transform:translate(-50%,0);border-radius:6px 0 0 0;padding:8px 8px 0;
+  background:linear-gradient(165deg,#2c2824,#1a1714);clip-path:polygon(0 0,86% 0,100% 12%,100% 100%,0 100%);box-shadow:inset 0 0 0 1px rgba(226,214,194,.1);
+  transition:transform .5s var(--ease),opacity .3s}
+.slot-cart.gone{transform:translate(-50%,-30px);opacity:0}
+.slot-cart .cart-label{height:100%;border-bottom:0;border-radius:3px 3px 0 0}
+.slot-cart .cart-label .col{opacity:1}
+.bezel{position:relative;background:#0a0909;border-radius:10px 10px 46px 10px;padding:24px 22px 30px;box-shadow:inset 0 0 0 1px #2c2722,inset 0 6px 14px rgba(0,0,0,.6)}
+.bezel-tag{position:absolute;left:22px;right:22px;top:8px;display:flex;align-items:center;gap:8px;font-family:var(--chip);font-size:8px;letter-spacing:.12em;color:var(--gold-deep)}
+.bezel-tag::before,.bezel-tag::after{content:"";height:1px;flex:1;background:linear-gradient(90deg,#3f372f,#2a2520)}
+.bezel-tag::before{flex:0 0 14px}
+.led{position:absolute;left:8px;top:48%;width:7px;height:7px;border-radius:50%;background:#3a2a20;box-shadow:inset 0 1px 1px rgba(0,0,0,.6)}
+.led.on{background:#e7c98f;box-shadow:0 0 10px #e7c98f,0 0 2px #fff}
+.led-txt{position:absolute;left:4px;top:calc(48% + 11px);font-family:var(--chip);font-size:6px;color:var(--gold-deep);letter-spacing:.05em}
+
+/* screen */
+.screen{position:relative;aspect-ratio:10/9;border-radius:4px;overflow:hidden;background:radial-gradient(120% 90% at 50% 40%,#1a1813 0%,var(--scr) 70%);color:var(--ph);font-family:var(--pix);font-size:20px;line-height:1.15;
+  box-shadow:inset 0 0 22px rgba(0,0,0,.85),0 0 0 1px #000}
+.screen::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:5;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.28) 0 1px,transparent 1px 3px),radial-gradient(120% 100% at 50% 50%,transparent 60%,rgba(0,0,0,.55));mix-blend-mode:multiply}
+.screen::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:6;background:linear-gradient(125deg,rgba(255,255,255,.06),transparent 35%)}
+.screen.flick .scr{animation:flick .38s steps(2)}
+@keyframes flick{0%{opacity:0;filter:brightness(2)}40%{opacity:1}60%{opacity:.4}100%{opacity:1;filter:none}}
+.scr{position:absolute;inset:0;padding:12px 14px;display:flex;flex-direction:column;overflow:hidden;text-shadow:0 0 6px rgba(233,223,201,.35)}
+.scr h3{font-weight:400;font-size:15px;letter-spacing:.06em;color:var(--ph-acc);display:flex;justify-content:space-between;border-bottom:1px dashed rgba(216,192,143,.35);padding-bottom:4px;margin-bottom:8px}
+.scr .list{list-style:none;display:flex;flex-direction:column;gap:2px;overflow:auto;scrollbar-width:none}
+.scr .list::-webkit-scrollbar{display:none}
+.scr .item{display:flex;gap:8px;align-items:baseline;width:100%;text-align:left;padding:2px 4px;border-radius:2px;color:var(--ph);font-family:var(--pix);font-size:20px;line-height:1.1}
+.scr .item small{font-size:15px;color:var(--ph-dim);margin-left:auto;white-space:nowrap}
+.scr .item::before{content:"\25B6";font-size:12px;opacity:0;transform:translateY(-1px)}
+.scr .item.sel{background:rgba(216,192,143,.14);color:#fff7e6}
+.scr .item.sel::before{opacity:1;animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+.scr .foot{margin-top:auto;font-size:14px;color:var(--ph-dim);display:flex;justify-content:space-between;gap:8px;padding-top:6px}
+.scr p{font-size:17px;color:var(--ph)}
+.boot{align-items:center;justify-content:center;text-align:center;gap:6px}
+.boot .logo{font-family:var(--serif);font-style:italic;font-size:46px;color:var(--ph-acc);animation:drop 1.1s var(--ease) both}
+.boot .who{font-size:20px;letter-spacing:.2em;animation:fade .6s .9s both}
+.boot .press{margin-top:18px;font-size:18px;color:var(--ph-dim);animation:fade .3s 1.4s both,blink 1.1s 1.7s steps(2) infinite}
+@keyframes drop{from{transform:translateY(-120%);opacity:0}to{transform:none;opacity:1}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.title-card{padding:0}
+.title-card .tc-img{position:relative;height:56%;overflow:hidden}
+.title-card .tc-img img{width:100%;height:100%;object-fit:cover;filter:saturate(.75) contrast(1.05)}
+.title-card .tc-img::after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 50%,var(--scr))}
+.title-card .tc-body{padding:4px 14px 12px;display:flex;flex-direction:column;flex:1}
+.title-card .tc-k{font-size:14px;color:var(--ph-dim);letter-spacing:.05em}
+.title-card .tc-t{font-family:var(--serif);font-size:26px;line-height:1;color:var(--ph-acc);margin:2px 0 4px;text-shadow:none}
+.title-card .press{font-size:17px;animation:blink 1.1s steps(2) infinite}
+.stat{display:grid;grid-template-columns:auto 1fr;gap:1px 10px;font-size:17px}
+.stat dt{color:var(--ph-dim)}
+.stat dd{color:var(--ph)}
+.bar{display:inline-block;height:8px;background:var(--ph-acc);box-shadow:0 0 6px rgba(216,192,143,.6);vertical-align:middle}
+.ach{display:flex;gap:8px;align-items:flex-start;padding:3px 4px}
+.ach .tro{flex:none;width:16px;height:16px;margin-top:2px;background:var(--ph-acc);clip-path:polygon(20% 0,80% 0,80% 30%,100% 30%,100% 50%,70% 65%,60% 80%,75% 80%,75% 100%,25% 100%,25% 80%,40% 80%,30% 65%,0 50%,0 30%,20% 30%);box-shadow:0 0 6px rgba(216,192,143,.6)}
+.ach b{display:block;font-weight:400;font-size:18px;color:#fff7e6}
+.ach span{display:block;font-size:14px;color:var(--ph-dim)}
+.ach.sel{background:rgba(216,192,143,.12)}
+.credits-roll{animation:roll 22s linear infinite;text-align:center;font-size:17px;display:flex;flex-direction:column;gap:12px;padding-top:100%}
+.credits-roll em{display:block;font-style:normal;color:var(--ph-dim);font-size:14px;letter-spacing:.1em}
+@keyframes roll{to{transform:translateY(-100%)}}
+
+/* brand + controls */
+.badge{display:flex;align-items:baseline;justify-content:space-between;margin:14px 6px 0}
+.badge b{font-family:var(--serif);font-style:italic;font-weight:600;font-size:22px;color:var(--gold)}
+.badge b i{font-style:normal;font-family:var(--chip);font-size:9px;letter-spacing:.1em;color:var(--gold-deep);margin-left:6px}
+.badge span{font-family:var(--chip);font-size:8px;letter-spacing:.14em;color:var(--gold-deep)}
+.controls{display:grid;grid-template-columns:1fr 1fr;align-items:center;margin-top:20px;padding:0 6px}
+.dpad{position:relative;width:104px;height:104px}
+.dpad button{position:absolute;width:35px;height:35px;background:linear-gradient(#25221f,#141210);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 3px 0 #050404,0 6px 10px rgba(0,0,0,.5);transition:transform .08s,box-shadow .08s}
+.dpad button:active,.dpad button.press{transform:translateY(2px);box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 1px 0 #050404}
+.dpad .u{left:34.5px;top:0;border-radius:5px 5px 0 0}.dpad .d{left:34.5px;bottom:0;border-radius:0 0 5px 5px}
+.dpad .l{left:0;top:34.5px;border-radius:5px 0 0 5px}.dpad .r{right:0;top:34.5px;border-radius:0 5px 5px 0}
+.dpad .c{left:34.5px;top:34.5px;pointer-events:none;box-shadow:none;background:#1a1815}
+.dpad .c::after{content:"";position:absolute;inset:11px;border-radius:50%;background:radial-gradient(#0e0d0c,#1d1a17)}
+.dpad button span{position:absolute;inset:0;display:grid;place-items:center;font-size:9px;color:var(--gold-deep)}
+.ab{justify-self:end;display:flex;gap:16px;transform:rotate(-24deg);margin-right:4px}
+.ab div{display:flex;flex-direction:column;align-items:center;gap:6px}
+.ab button{width:44px;height:44px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#efe3cc,#b9a88f 55%,#7d6f5b);color:#2a241d;font-family:var(--chip);font-size:13px;
+  box-shadow:0 4px 0 #4a4034,0 8px 14px rgba(0,0,0,.55),inset 0 -2px 4px rgba(0,0,0,.25);transition:transform .08s,box-shadow .08s}
+.ab button:active,.ab button.press{transform:translateY(3px);box-shadow:0 1px 0 #4a4034,0 3px 6px rgba(0,0,0,.5)}
+.ab label{font-family:var(--chip);font-size:9px;color:var(--gold-deep)}
+.ss{grid-column:1/-1;display:flex;justify-content:center;gap:26px;margin-top:22px}
+.ss div{display:flex;flex-direction:column;align-items:center;gap:6px;transform:rotate(-24deg)}
+.ss button{width:42px;height:11px;border-radius:999px;background:linear-gradient(#2c2824,#151311);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 2px 0 #050404}
+.ss button:active,.ss button.press{transform:translateY(1px)}
+.ss label{font-family:var(--chip);font-size:8px;color:var(--gold-deep);letter-spacing:.1em}
+.grille{position:absolute;right:30px;bottom:30px;display:flex;gap:6px;transform:rotate(-30deg)}
+.grille i{width:4px;height:40px;border-radius:2px;background:#070606;box-shadow:inset 0 1px 2px rgba(0,0,0,.9),0 1px 0 rgba(226,214,194,.06)}
+.hint{margin-top:22px;text-align:center;font-family:var(--chip);font-size:9px;letter-spacing:.1em;color:var(--dim)}
+body.gold .console{background:linear-gradient(158deg,#efe3cc 0%,#c9b48f 46%,#8f7a5b 100%)}
+body.gold .badge b,body.gold .badge span,body.gold .bezel-tag{color:#3a3026}
+
+/* ---------- claw machine ---------- */
+.claw-zone{justify-self:start;width:min(100%,330px)}
+.cabinet{position:relative;border-radius:14px 14px 8px 8px;padding:12px;background:linear-gradient(170deg,#25211d,#141210 70%);box-shadow:inset 0 0 0 1px rgba(226,214,194,.08),0 40px 70px rgba(0,0,0,.6);transition:box-shadow .6s}
+.cabinet.live{box-shadow:inset 0 0 0 1px rgba(226,214,194,.3),0 0 0 1px rgba(216,192,143,.2),0 0 60px rgba(216,192,143,.12),0 40px 70px rgba(0,0,0,.6)}
+.marquee{position:relative;text-align:center;border-radius:8px;padding:10px 8px 9px;margin-bottom:10px;background:linear-gradient(#1a1714,#0d0c0b);box-shadow:inset 0 0 0 1px rgba(185,168,143,.35)}
+.marquee b{display:block;font-family:var(--chip);font-size:13px;letter-spacing:.16em;color:var(--gold-hi)}
+.marquee span{font-family:var(--sans);font-size:11px;color:var(--muted)}
+.bulbs{position:absolute;left:8px;right:8px;top:4px;display:flex;justify-content:space-between}
+.bulbs.b2{top:auto;bottom:4px}
+.bulbs i{width:3px;height:3px;border-radius:50%;background:#5a4c3a}
+.cabinet.live .bulbs i{animation:bulb 1.2s infinite}
+.cabinet.live .bulbs i:nth-child(even){animation-delay:.6s}
+@keyframes bulb{0%,49%{background:#f3dca8;box-shadow:0 0 6px #f3dca8}50%,100%{background:#5a4c3a;box-shadow:none}}
+.glass{position:relative;height:340px;border-radius:6px;overflow:hidden;background:radial-gradient(120% 80% at 50% 0%,#1d1a16,#0b0a09 70%);box-shadow:inset 0 0 0 1px rgba(226,214,194,.12),inset 0 -30px 40px rgba(0,0,0,.6)}
+.glass::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:8;background:linear-gradient(115deg,rgba(255,255,255,.07) 0 12%,transparent 12% 30%,rgba(255,255,255,.04) 30% 34%,transparent 34%)}
+.rail{position:absolute;left:8px;right:8px;top:8px;height:6px;border-radius:3px;background:linear-gradient(#3a342e,#1a1714);z-index:4}
+.carriage{position:absolute;top:4px;left:50%;width:30px;height:14px;transform:translateX(-50%);border-radius:3px;background:linear-gradient(#e2d6c2,#8a7a62);z-index:6;transition:left .6s var(--ease)}
+.cable{position:absolute;left:50%;top:12px;width:2px;height:40px;transform:translateX(-50%);background:linear-gradient(#b9a88f,#7d6f5b);transition:height .7s var(--ease)}
+.head{position:absolute;left:50%;bottom:-30px;width:44px;height:34px;transform:translateX(-50%)}
+.head .hub{position:absolute;left:50%;top:0;width:18px;height:10px;transform:translateX(-50%);border-radius:3px;background:linear-gradient(#e2d6c2,#8a7a62)}
+.head .prong{position:absolute;top:6px;width:4px;height:26px;border-radius:2px;background:linear-gradient(#d4c6ad,#7d6f5b);transform-origin:50% 0;transition:transform .25s}
+.head .prong::after{content:"";position:absolute;bottom:-1px;width:9px;height:4px;border-radius:2px;background:#9b8b72}
+.head .p1{left:13px;transform:rotate(14deg)}.head .p1::after{left:0}
+.head .p2{right:13px;transform:rotate(-14deg)}.head .p2::after{right:0}
+.head.open .p1{transform:rotate(38deg)}.head.open .p2{transform:rotate(-38deg)}
+.cap{position:absolute;width:62px;height:62px;transform:translate(-50%,-50%);border-radius:50%;z-index:3;transition:left .6s var(--ease),top .7s var(--ease),opacity .4s,filter .3s}
+.cap .shell{position:absolute;inset:0;border-radius:50%;overflow:hidden;background:linear-gradient(180deg,rgba(226,214,194,.55) 0 50%,#16130f 50% 100%);box-shadow:inset 0 0 0 1px rgba(226,214,194,.35),inset -6px -8px 14px rgba(0,0,0,.45),0 6px 10px rgba(0,0,0,.5)}
+.cap .shell::before{content:"";position:absolute;left:0;right:0;top:calc(50% - 1px);height:2px;background:rgba(0,0,0,.4);z-index:2}
+.cap .win{position:absolute;left:50%;top:50%;width:40px;height:40px;transform:translate(-50%,-50%);border-radius:50%;overflow:hidden;box-shadow:0 0 0 2px #0c0b0a,0 0 0 3px rgba(185,168,143,.6);z-index:1}
+.cap .win img{width:100%;height:100%;object-fit:cover}
+.cap .shine{position:absolute;left:14%;top:10%;width:30%;height:18%;border-radius:50%;background:rgba(255,255,255,.35);filter:blur(1px);z-index:3}
+.cap:hover,.cap.target{filter:drop-shadow(0 0 10px rgba(216,192,143,.65))}
+.cap.target::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:1px dashed rgba(226,214,194,.7);animation:spin 6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.cap.gone{opacity:0}
+.chute{position:absolute;left:8px;bottom:8px;width:70px;height:62px;border-radius:4px;background:linear-gradient(#050404,#14110e);box-shadow:inset 0 0 0 1px rgba(185,168,143,.35);z-index:7;display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px}
+.chute span{font-family:var(--chip);font-size:8px;letter-spacing:.14em;color:var(--gold-deep)}
+.cap-tip{position:absolute;z-index:9;left:0;top:0;transform:translate(-50%,-100%);white-space:nowrap;pointer-events:none;font-family:var(--chip);font-size:9px;letter-spacing:.06em;padding:4px 8px;border-radius:3px;background:rgba(10,9,8,.9);color:var(--gold-hi);border:1px solid rgba(185,168,143,.4);opacity:0;transition:opacity .2s}
+.panel{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding:10px 12px;border-radius:8px;background:linear-gradient(#1a1714,#0f0e0c);box-shadow:inset 0 0 0 1px rgba(226,214,194,.08)}
+.arrows{display:flex;gap:8px}
+.arrows button{width:38px;height:38px;border-radius:50%;background:linear-gradient(#2c2824,#151311);box-shadow:0 3px 0 #050404,inset 0 1px 0 rgba(255,255,255,.08);color:var(--gold);font-size:13px}
+.arrows button:active,.grab:active{transform:translateY(2px)}
+.coin{font-family:var(--chip);font-size:8px;color:var(--dim);letter-spacing:.1em;text-align:center;line-height:1.6}
+.coin i{display:block;width:5px;height:20px;margin:0 auto 2px;border-radius:2px;background:#070606;box-shadow:0 0 0 2px #2a2622}
+.grab{width:62px;height:62px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#efe3cc,#b9a88f 55%,#7d6f5b);color:#2a241d;font-family:var(--chip);font-size:11px;box-shadow:0 4px 0 #4a4034,0 8px 14px rgba(0,0,0,.55)}
+.claw-note{margin-top:14px;font-size:12px;color:var(--dim)}
+
+/* ---------- manual (project detail) ---------- */
+.manual{position:fixed;inset:0;z-index:100;overflow-y:auto;background:rgba(9,8,7,.94);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);opacity:0;transition:opacity .35s}
+.manual.show{opacity:1}
+.m-close{position:fixed;top:max(16px,env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right,0px));z-index:3;width:44px;height:44px;border-radius:50%;border:1px solid var(--edge);background:rgba(12,11,10,.8);color:var(--ink);font-size:18px}
+.m-close:hover{border-color:var(--gold);color:var(--gold-hi)}
+.m-inner{max-width:1180px;margin:0 auto;padding:72px max(16px,env(safe-area-inset-right,0px)) 80px max(16px,env(safe-area-inset-left,0px));transform:translateY(24px);transition:transform .5s var(--ease)}
+.manual.show .m-inner{transform:none}
+.m-top{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:40px;align-items:end;border-bottom:1px solid #2c2722;padding-bottom:32px;margin-bottom:28px}
+.m-cart{position:relative;aspect-ratio:16/10;border-radius:8px;overflow:hidden;box-shadow:0 0 0 1px rgba(185,168,143,.35),0 30px 60px rgba(0,0,0,.5)}
+.m-cart img{width:100%;height:100%;object-fit:cover}
+.m-cart span{position:absolute;left:14px;top:12px;font-family:var(--chip);font-size:10px;letter-spacing:.14em;color:var(--gold-hi);text-shadow:0 1px 6px rgba(0,0,0,.8)}
+.m-kind{font-family:var(--chip);font-size:10px;letter-spacing:.14em;color:var(--gold)}
+.m-title{font-family:var(--serif);font-weight:500;font-size:clamp(40px,5vw,68px);line-height:1;margin:12px 0 4px;text-wrap:balance}
+.m-sub{font-family:var(--serif);font-style:italic;font-size:20px;color:var(--muted)}
+.m-desc{margin-top:16px;font-size:15px;line-height:1.75;color:#d4cec5;max-width:62ch}
+.m-badge{display:inline-block;margin-right:8px;font-size:12px;padding:2px 10px;border-radius:999px;color:#E9D9F2;border:1px solid rgba(214,180,236,.45)}
+.m-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px}
+.m-tags span{font-family:var(--chip);font-size:9px;letter-spacing:.06em;color:var(--muted);border:1px solid #2f2a25;border-radius:999px;padding:4px 10px}
+.m-links{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:999px;border:1px solid var(--edge);font-size:13px;color:var(--ink);text-decoration:none;transition:.25s}
+.btn:hover{border-color:var(--gold);color:var(--gold-hi)}
+.btn.solid{background:var(--gold);border-color:var(--gold);color:#16120d;font-weight:500}
+.btn.solid:hover{background:var(--gold-hi);color:#16120d}
+.m-note{margin-top:12px;font-size:12px;color:var(--dim);max-width:62ch}
+.m-gallery{display:grid;gap:14px}
+.m-gallery.shots{grid-template-columns:repeat(2,minmax(0,1fr))}
+.m-gallery img{width:100%;height:auto;border-radius:6px;box-shadow:0 0 0 1px #2a2520;background:#141210}
+.m-empty{color:var(--muted);text-align:center;padding:30px;border:1px dashed #2f2a25;border-radius:8px}
+.m-nav{display:flex;justify-content:space-between;gap:16px;margin-top:40px;padding-top:24px;border-top:1px solid #2c2722}
+.m-nav button{text-align:left;color:var(--muted);font-family:var(--serif);font-size:22px;transition:color .2s}
+.m-nav button:last-child{text-align:right}
+.m-nav button:hover{color:var(--gold-hi)}
+.m-nav small{display:block;font-family:var(--chip);font-size:9px;letter-spacing:.12em;color:var(--dim);margin-bottom:4px}
+
+/* ---------- viewer (video / game / CV) ---------- */
+.viewer{position:fixed;inset:0;z-index:150;display:flex;flex-direction:column;background:rgba(6,5,5,.97)}
+.v-bar{display:flex;align-items:center;gap:12px;padding:12px max(16px,env(safe-area-inset-right,0px)) 12px max(16px,env(safe-area-inset-left,0px));border-bottom:1px solid #2a2520}
+.v-bar span{flex:1;min-width:0;font-family:var(--chip);font-size:10px;letter-spacing:.12em;color:var(--gold)}
+.v-bar .btn{padding:7px 14px}
+.v-body{flex:1;min-height:0;display:flex;justify-content:center;align-items:center;padding:20px 16px;overflow:auto}
+.v-body video{width:100%;max-width:1280px;max-height:100%;border-radius:8px;background:#000}
+.v-body iframe{width:100%;height:100%;border:0;border-radius:8px;background:#EFE3F2}
+.v-body .cv{width:100%;max-width:860px;align-self:flex-start;border-radius:6px}
+.v-body:has(iframe){padding:0}
+
+/* ---------- quick view ---------- */
+.quick{position:fixed;inset:0;z-index:90;overflow-y:auto;background:rgba(9,8,7,.97)}
+.q-inner{max-width:1180px;margin:0 auto;padding:72px max(16px,env(safe-area-inset-right,0px)) 60px max(16px,env(safe-area-inset-left,0px))}
+.q-inner h2{font-family:var(--serif);font-weight:500;font-size:44px;margin-bottom:6px}
+.q-inner h2 + p{color:var(--muted);margin-bottom:26px;font-size:14px}
+.q-sec{font-family:var(--chip);font-size:10px;letter-spacing:.16em;color:var(--gold);margin:26px 0 12px}
+.q-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.q-card{text-align:left;border:1px solid #2a2520;border-radius:10px;overflow:hidden;background:var(--bg-2);transition:border-color .25s,transform .25s}
+.q-card:hover{border-color:var(--gold);transform:translateY(-3px)}
+.q-card img{width:100%;aspect-ratio:16/10;object-fit:cover}
+.q-card div{padding:10px 12px 12px}
+.q-card b{display:block;font-family:var(--serif);font-weight:500;font-size:19px}
+.q-card span{font-family:var(--chip);font-size:8.5px;letter-spacing:.06em;color:var(--gold)}
+
+.toast{position:fixed;left:50%;bottom:28px;z-index:400;transform:translate(-50%,20px);opacity:0;transition:.35s var(--ease);font-family:var(--chip);font-size:11px;letter-spacing:.1em;padding:10px 16px;border-radius:999px;background:var(--gold);color:#16120d;pointer-events:none}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.flyer{position:fixed;z-index:60;pointer-events:none;transition:transform .7s var(--ease),opacity .3s}
+
+/* ---------- responsive ---------- */
+@media (max-width:1080px){
+  .stage{grid-template-columns:1fr;justify-items:center;gap:36px;min-height:0}
+  .rack,.claw-zone{justify-self:center;width:min(100%,560px)}
+  .console-wrap{order:-1}
+  .carts{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+  .cart-name{font-size:13px}
+  .hint.keys{display:none}
+}
+@media (max-width:560px){
+  .brand span{display:none}
+  .console{width:min(88vw,340px)}
+  .carts{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .claw-zone{width:min(100%,340px)}
+  .m-top{grid-template-columns:1fr;gap:20px}
+  .m-gallery.shots{grid-template-columns:1fr}
+  .screen{font-size:18px}
+  .scr .item{font-size:18px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand"><b>YW</b><span>PORTFOLIO SYSTEM · 2026</span></div>
+  <div class="top-r">
+    <button class="pill" id="quickBtn" data-en="QUICK VIEW" data-zh="速览全部">QUICK VIEW</button>
+    <a class="pill" href="https://ywen8019-tech.github.io/wynnyang.github.io/" target="_blank" rel="noopener" data-en="ABOUT ME ↗" data-zh="个人网站 ↗">ABOUT ME ↗</a>
+    <button class="pill" id="soundBtn" aria-pressed="true" data-en="SOUND ON" data-zh="音效 开">SOUND ON</button>
+    <button class="pill" id="langBtn">中文</button>
+  </div>
+</header>
+
+<main class="stage">
+  <!-- MAIN QUESTS: cartridge rack -->
+  <section class="rack" aria-labelledby="rackLabel">
+    <div class="zone-label" id="rackLabel"><span data-en="MAIN QUESTS" data-zh="主线任务">MAIN QUESTS</span><i data-en="· SELECTED WORK" data-zh="· 精选作品">· SELECTED WORK</i></div>
+    <div class="carts" id="carts"></div>
+    <p class="rack-note" data-en="Pick a cartridge to insert it into the console." data-zh="选一盒卡带，插进掌机开始游戏。">Pick a cartridge to insert it into the console.</p>
+  </section>
+
+  <!-- CONSOLE -->
+  <div class="console-wrap">
+    <div class="console" id="console">
+      <div class="slot"></div>
+      <div class="slot-cart gone" id="slotCart" aria-hidden="true"><span class="cart-label"><img class="col" alt=""></span></div>
+      <div class="bezel">
+        <div class="bezel-tag">DOT MATRIX · INTERACTION SYSTEM</div>
+        <span class="led" id="led"></span><span class="led-txt">POWER</span>
+        <div class="screen" id="screen" role="application" aria-label="Console screen"><div class="scr" id="scr"></div></div>
+      </div>
+      <div class="badge"><b>YW<i>-01</i></b><span>PORTFOLIO EDITION</span></div>
+      <div class="controls">
+        <div class="dpad" aria-label="Direction pad">
+          <button class="u" data-k="up" aria-label="Up"><span>▲</span></button>
+          <button class="l" data-k="left" aria-label="Left"><span>◀</span></button>
+          <span class="c"></span>
+          <button class="r" data-k="right" aria-label="Right"><span>▶</span></button>
+          <button class="d" data-k="down" aria-label="Down"><span>▼</span></button>
+        </div>
+        <div class="ab">
+          <div><button data-k="b" aria-label="B, back">B</button><label>BACK</label></div>
+          <div><button data-k="a" aria-label="A, select">A</button><label>OK</label></div>
+        </div>
+        <div class="ss">
+          <div><button data-k="select" aria-label="Select, quick view"></button><label>SELECT</label></div>
+          <div><button data-k="start" aria-label="Start, main menu"></button><label>START</label></div>
+        </div>
+      </div>
+      <div class="grille" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    </div>
+    <p class="hint keys" data-en="↑ ↓ ← → MOVE · ENTER / Z = A · ESC / X = B" data-zh="方向键 移动 · ENTER / Z = A 确认 · ESC / X = B 返回">↑ ↓ ← → MOVE · ENTER / Z = A · ESC / X = B</p>
+  </div>
+
+  <!-- SIDE QUESTS: claw machine -->
+  <section class="claw-zone" aria-labelledby="clawLabel">
+    <div class="zone-label" id="clawLabel"><span data-en="SIDE QUESTS" data-zh="支线任务">SIDE QUESTS</span><i data-en="· MORE WORK" data-zh="· 更多作品">· MORE WORK</i></div>
+    <div class="cabinet" id="cabinet">
+      <div class="marquee"><div class="bulbs"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <b>CLAW · QUEST</b><span data-en="grab a capsule, open a project" data-zh="抓一颗扭蛋，打开一个作品">grab a capsule, open a project</span>
+        <div class="bulbs b2"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+      <div class="glass" id="glass">
+        <div class="rail"></div>
+        <div class="carriage" id="carriage"><div class="cable" id="cable"><div class="head" id="head"><span class="hub"></span><span class="prong p1"></span><span class="prong p2"></span></div></div></div>
+        <div class="chute"><span>PRIZE</span></div>
+        <div class="cap-tip" id="capTip"></div>
+      </div>
+      <div class="panel">
+        <div class="arrows"><button id="clawL" aria-label="Move claw left">◀</button><button id="clawR" aria-label="Move claw right">▶</button></div>
+        <div class="coin"><i></i>FREE PLAY</div>
+        <button class="grab" id="grabBtn" data-en="GRAB" data-zh="抓！">GRAB</button>
+      </div>
+    </div>
+    <p class="claw-note" data-en="Steer with ◀ ▶ and press GRAB — or just tap a capsule." data-zh="用 ◀ ▶ 移动爪子再按「抓」，也可以直接点扭蛋。">Steer with ◀ ▶ and press GRAB — or just tap a capsule.</p>
+  </section>
+</main>
+
+<!-- project manual -->
+<div class="manual" id="manual" hidden role="dialog" aria-modal="true" aria-labelledby="mTitle">
+  <button class="m-close" id="mClose" aria-label="Close">✕</button>
+  <div class="m-inner">
+    <div class="m-top">
+      <div class="m-cart"><img id="mCover" alt=""><span id="mNum"></span></div>
+      <div>
+        <div class="m-kind" id="mKind"></div>
+        <h2 class="m-title" id="mTitle"></h2>
+        <div class="m-sub" id="mSub"></div>
+        <p class="m-desc" id="mDesc"></p>
+        <div class="m-tags" id="mTags"></div>
+        <div class="m-links" id="mLinks"></div>
+        <p class="m-note" id="mNote" hidden></p>
+      </div>
+    </div>
+    <div class="m-gallery" id="mGallery"></div>
+    <div class="m-nav"><button id="mPrev"></button><button id="mNext"></button></div>
+  </div>
+</div>
+
+<!-- viewer -->
+<div class="viewer" id="viewer" hidden role="dialog" aria-modal="true">
+  <div class="v-bar"><span id="vTitle"></span><div id="vAct"></div><button class="m-close" style="position:static" id="vClose" aria-label="Close">✕</button></div>
+  <div class="v-body" id="vBody"></div>
+</div>
+
+<!-- quick view -->
+<div class="quick" id="quick" hidden role="dialog" aria-modal="true" aria-labelledby="qTitle">
+  <button class="m-close" id="qClose" aria-label="Close">✕</button>
+  <div class="q-inner">
+    <h2 id="qTitle" data-en="All projects" data-zh="全部作品">All projects</h2>
+    <p data-en="The same work without the game — for when you're short on time." data-zh="不玩游戏，直接看全部作品。">The same work without the game — for when you're short on time.</p>
+    <div class="q-sec" data-en="MAIN QUESTS · SELECTED WORK" data-zh="主线任务 · 精选作品">MAIN QUESTS · SELECTED WORK</div>
+    <div class="q-grid" id="qMain"></div>
+    <div class="q-sec" data-en="SIDE QUESTS · MORE WORK" data-zh="支线任务 · 更多作品">SIDE QUESTS · MORE WORK</div>
+    <div class="q-grid" id="qMore"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const DATA = {"main": {"zone": {"n": "01", "en": "In the Zone", "zh": "心流之境", "imgs": ["assets/work/p01.jpg", "assets/work/p02.jpg", "assets/work/p03.jpg", "assets/work/p04.jpg", "assets/work/p05.jpg"], "tags": ["Immersive Experience", "Unity", "C#", "Level Design", "VR", "Body Storming"], "den": "While skiing with my partner I experienced a state of complete, self-forgetting focus — strikingly similar to falling in love. I call it “in the zone” rather than “flow”, to stress its distortion of time and space. Through interviews with 20 extreme-sports enthusiasts, body storming and moodboards, I translated its stages into six Unity levels — floating, tunnels, rolling balls and more — connected by “wormholes”, guiding participants through movement, emotion and perception.", "dzh": "和伴侣滑雪时，我体验到一种高度沉浸、忘我的专注——与恋爱中的感受惊人地相似。我称之为“in the zone”而非“心流”，以强调它对时间与空间的扭曲。通过对 20 位极限运动爱好者的访谈、身体风暴与情绪板，我将这一状态的各个阶段转化为六个 Unity 关卡（漂浮、隧道、滚球等），并以“虫洞”相连，引导参与者在运动、情绪与感知中重新体验“忘我”。", "links": [["Showcase · YouTube", "https://youtu.be/1zl_6Zqlujo"], ["Showcase · Vimeo", "https://vimeo.com/1133417435"], ["Process · YouTube", "https://youtu.be/0w9tn2J0AhU"], ["Process · Vimeo", "https://vimeo.com/1133388405"]]}, "death": {"n": "02", "en": "The Fourth Death", "zh": "第四次死亡", "imgs": ["assets/work/p06.jpg", "assets/work/p07.jpg", "assets/work/p08.jpg", "assets/work/p09.jpg", "assets/work/p10.jpg"], "tags": ["Speculative Design", "Worldview Script", "Digital Animation", "Narrative Design"], "den": "A speculative design investigation into the industrialisation of regret. A fictional company sells the “Chrono-Agent” — a pill promising time reversal — and a crime-scene installation reveals how remorse is commodified. Four scenarios (a casino, the stock market, a cosmetic clinic and an exam hall) show that excessive consumption traps users inside regret itself. Includes an online survey on regret, an industry-chain analysis, the drug and brand system, and an art-narrative film.", "dzh": "一项关于“后悔”被产业化的思辨设计。虚构的公司售卖号称能让时间倒流的“Chrono-Agent”后悔药，并以案发现场式的装置揭示悔恨如何被商品化。赌场、股市、整形诊所与考场四个场景表明：过度消费最终让人困在后悔本身。项目包含关于后悔的线上调研、产业链分析、药物与品牌系统设计，以及一部艺术叙事短片。", "links": [["Film · Vimeo", "https://vimeo.com/1146518482"], ["Film · YouTube", "https://youtu.be/8FwmL-GGwm8"]]}, "gluttony": {"n": "03", "en": "Gluttony Paradise", "zh": "暴食乐园", "imgs": ["assets/work/p11.jpg", "assets/work/p12.jpg", "assets/work/p13.jpg", "assets/work/p14.jpg", "assets/work/p15.jpg"], "tags": ["Critical Game Design", "Unity", "AI Dialogue", "Toon Shading", "Playtesting"], "den": "An immersive game that simulates binge eating, drawn from personal experience. In a candy-coloured town players can eat without limit — until they are caught in the loop of anxiety → eating for relief → binge → repeat, mirroring the capitalist cycle of manufactured desire and brief satisfaction. Features an anxiety meter, AI-driven NPC dialogue, metaphorical food architecture, a shader-based visual shift into the binge state, and playtest-driven reflection.", "dzh": "一款源于个人经历、模拟暴食的沉浸式游戏。玩家在糖果色小镇中可以无限进食，却逐渐陷入“焦虑 → 进食缓解 → 暴食 → 再循环”的陷阱，映射资本主义中“制造欲望—短暂满足—更深焦虑”的循环。包含焦虑值系统、AI 驱动的 NPC 对话、带隐喻的食物建筑、进入暴食状态时的着色器视觉转换，以及基于试玩的反思与迭代。", "links": [["Showcase · Vimeo", "https://vimeo.com/1146351911"], ["Showcase · YouTube", "https://youtu.be/FIKNKOmD068"], ["Process · Vimeo", "https://vimeo.com/1146349151"], ["Process · YouTube", "https://youtu.be/0HQGpsshzZk"]]}, "protagonist": {"n": "04", "en": "Be Protagonist", "zh": "成为主角", "imgs": ["assets/work/p16.jpg", "assets/work/p17.jpg", "assets/work/p18.jpg", "assets/work/p19.jpg"], "tags": ["Interactive Installation", "TouchDesigner", "Gesture Interaction", "Facial Tracking", "Gemini API", "3D Printing"], "den": "An interactive installation responding to the “NPC mentality” and loss of self-worth among young people. Framed as a character-creation screen in the game “Earth Online”, participants use gestures to design a personal facial armour on a large screen. A Gemini-powered pipeline then turns their capture into a 3D model, and they leave with a 3D-printed protagonist ID card carrying a personal quest.", "dzh": "回应年轻人中流行的“NPC 心态”与自我价值感缺失的交互装置。作品以网络梗“地球 Online”的角色创建界面为框架，参与者在大屏前用手势设计属于自己的“面甲”；随后由基于 Gemini 的程序把截图转换为 3D 模型，参与者最终带走一张印有个人任务的 3D 打印主角身份卡。", "links": [["Exhibition · YouTube", "https://youtu.be/z7EUHCh-lFI"], ["Exhibition · Vimeo", "https://vimeo.com/1146352328"]]}}, "more": {"sheep": {"more": 1, "en": "Letter of the Flying Sheep", "zh": "", "kind": ["Web game · Birthday gift", "网页游戏 · 生日礼物"], "tags": ["Web Game", "Narrative", "Personal"], "den": "A small browser game I made as a birthday present for my mom. Her name sounds like “flying sheep”, so the hero is a little sheep with wings. The five levels follow her life in order, from Shenzhen Middle School to Shenzhen University to Nanshan Science Park, and each scene is drawn from the real place. Ping-pong bats, a drawing board, and the cat and pigeons she once kept all appear along the way, in her favourite purple. The journey ends with a birthday letter.", "dzh": "这是我送给妈妈的生日礼物，一个小小的网页游戏。妈妈名字的谐音很像“flying sheep”，所以主角是一只会飞的小羊。五个关卡按她的成长顺序设计，从深中、深大到南山科技园，每个场景都参考了这些地方的样子；乒乓球、画板，还有她以前养过的猫和鸽子都藏在游戏里，整体用了她最喜欢的紫色。旅程的终点是一封生日信。", "imgs": ["assets/more/sheep-1.jpg", "assets/more/sheep-2.jpg", "assets/more/sheep-3.jpg", "assets/more/sheep-4.jpg", "assets/more/sheep-5.jpg", "assets/more/sheep-6.jpg"], "links": [["Play in browser", "#play-sheep", "▶"]], "badge": ["♡ For Mom", "♡ 献给妈妈"]}, "zero": {"more": 1, "en": "零时之塔", "zh": "", "kind": ["Team · TapTap Spotlight Jam 2026", "团队 · TapTap 聚光灯 Game Jam 2026"], "tags": ["Unreal Engine", "Card Combat", "Game Jam", "Team of 11"], "den": "A 21-day entry for the TapTap Spotlight Game Jam 2026, made by an 11-person team (For Dawn Studio) in Unreal Engine. Time has become unstable and different eras of the same place now overlap. Players are a witch who can interfere with time, fighting through floors that show the same place in different periods with a hand of skill cards. Released as a playable demo on TapTap.", "dzh": "TapTap 聚光灯 2026 年 21 天游戏创作挑战参赛作品，由 11 人团队（For Dawn Studio）使用虚幻引擎制作。世界的时间变得不再稳定，同一地点的不同时代重叠在一起。玩家扮演能干涉时间的魔女，用手中的技能卡牌，在“同一地点、不同时期”的楼层中一路向前。试玩 Demo 已在 TapTap 上线。", "imgs": ["assets/more/zero-1.jpg", "assets/more/zero-2.jpg", "assets/more/zero-3.jpg", "assets/more/zero-4.jpg", "assets/more/zero-5.jpg"], "links": [["TapTap", "https://www.taptap.cn/app/977535", "↗"]], "badge": null}, "who": {"more": 1, "en": "Who Am I?", "zh": "", "kind": ["Team · MA Games Design, LCC", "团队 · 伦敦传媒学院游戏设计硕士"], "tags": ["Environmental Narrative", "3D", "Team of 4", "Playtested ×3", "CN / EN / IT"], "den": "An environmental narrative game we made as a team of four for the Designing and Prototyping unit of the MA Games Design at LCC. You start as a baby animal with no idea what you are, and work it out from the world around you: tracks in the mud, gnawed stumps and a dam. Then you choose which of four grown-ups is your family. We ran three rounds of playtesting: v0.4 within the team, v0.6 in class and v0.7.4 with 23 players. The findings led us to add hints such as glows, light beams and golden light, and the latest round raised the opposite question: whether those hints now speak louder than the environment. One playthrough takes about five minutes, mostly with one button, in Chinese, English or Italian.", "dzh": "伦敦传媒学院（LCC）游戏设计硕士“设计与原型”课程的团队作品，一款 4 人合作完成的环境叙事游戏。玩家是一只不知道自己是什么的小动物，只能从环境中寻找答案：泥地上的脚印、被啃断的树桩和水坝；最后在四只成年动物中，选出哪一只是自己的家人。我们一共进行了三轮试玩测试：v0.4 团队内部、v0.6 课堂试玩、v0.7.4 共 23 位玩家。根据测试结果，我们加入了发光、光束、金色光线等提示；而最新一轮又提出了相反的问题：这些提示是否已经盖过了环境本身的表达。一次游玩约 5 分钟，基本只用一个按键，支持中文、英文和意大利语。", "imgs": ["assets/more/who-1.jpg", "assets/more/who-2.jpg", "assets/more/who-3.jpg", "assets/more/who-4.jpg", "assets/more/who-5.jpg", "assets/more/who-6.jpg", "assets/more/who-7.jpg", "assets/more/who-8.jpg"], "links": [["Watch intro video", "#watch", "▶"], ["Download for Mac", "#dl-mac", "↓"], ["Download for Windows", "#dl-win", "↓"]], "badge": null, "video": "assets/video/whoami-intro.mp4", "poster": "assets/more/who-cover.jpg", "note": ["Mac: the app is not notarised. If macOS blocks it the first time, go to System Settings › Privacy & Security and click “Open Anyway”. Controls: WASD to move, mouse to look, E to act.", "Mac：应用未经公证，首次打开若被拦截，请到 系统设置 › 隐私与安全性 点击“仍要打开”。操作：WASD 移动，鼠标转视角，E 互动。"]}, "oms": {"more": 1, "en": "One More Second", "zh": "", "kind": ["Team · GMTK Game Jam 2026", "团队 · GMTK Game Jam 2026"], "tags": ["Unity", "Puzzle", "Game Jam", "Team of 8"], "den": "Our GMTK Game Jam 2026 entry, made by a team of eight in Unity. A fire breaks out in a shopping mall. As a firefighter carrying magic pocket watches, you drag the watches onto objects to change their time, solve each room’s puzzle and save as many people as you can before your own countdown runs out. The images here are the cover, character art, the time-ability icons (rewind, slow down, speed up) and the floor backgrounds, taken from the game build.", "dzh": "GMTK Game Jam 2026 参赛作品，8 人团队用 Unity 完成。商场突发火灾，玩家扮演带着魔法怀表的消防员：把怀表拖到物体上改变它们的时间，解开每个房间的谜题，在自己的倒计时结束前救出尽可能多的人。下方图片包括封面、角色立绘、时间能力图标（倒流、减速、加速）以及各楼层场景背景，均取自游戏文件。", "imgs": ["assets/more/oms-1.jpg", "assets/more/oms-2.jpg", "assets/more/oms-3.jpg", "assets/more/oms-4.jpg", "assets/more/oms-5.jpg", "assets/more/oms-6.jpg", "assets/more/oms-7.jpg", "assets/more/oms-8.jpg"], "links": [["Play on itch.io", "https://morton-mao.itch.io/one-more-second", "↗"]], "badge": null}, "gold": {"more": 1, "en": "Hoooook", "zh": "", "kind": ["On Steam · Gold-miner × Roguelite", "已上架 Steam · 黄金矿工 × 肉鸽"], "tags": ["Roguelite", "Gold-miner", "Build Design", "Steam"], "den": "Hoooook is on Steam: a gold-miner game crossed with a roguelite. You swing a mechanical claw to grab gold, gems and items, upgrade the hand across five stats (speed, size, rotation, strength and reach), and dig deeper through themed layers such as mines, swamps and graveyards. The current build system is deep but hard to read, which makes the game harder to pick up. My next step is to split builds across characters: each character gets one clear leaning and becomes the physical rig that replaces the mine cart, chosen at the start of a run. The demo uses a single default character built around a combo build.", "dzh": "Hoooook 已上架 Steam，是“黄金矿工 + 肉鸽”的体验。玩家甩动机械爪抓取金矿、宝石和道具，从速度、尺寸、旋转、力量、抓取距离五个维度升级机械手，在矿洞、沼泽、墓地等不同主题的地层中向下挖掘。目前的流派设计很硬核、也比较隐晦，上手存在门槛；接下来我计划把流派拆分到具体角色上：每个角色有一个明确的倾向，角色具象化后就是取代矿车的那个实体，在开局时选择。目前的 Demo 相当于默认一个角色，主打连击流派。", "imgs": ["assets/more/gold-1.jpg", "assets/more/gold-2.jpg", "assets/more/gold-3.jpg", "assets/more/gold-4.jpg", "assets/more/gold-5.jpg"], "links": [], "badge": ["On Steam", "已上架 Steam"]}, "dream": {"more": 1, "en": "梦我", "zh": "", "kind": ["Team lead · 2D platformer", "团队组长 · 2D 平台跳跃"], "tags": ["Unity", "Team Lead", "Game Design", "Programming", "50-player Playtest"], "den": "A team project where I was team lead, responsible for game design and programming. It is a 2D platformer about self-discovery, grounded in Freud’s dream theory and personality structure and in Self-Determination Theory. Three acts map to combat (facing raw desire), platforming (finding balance in the real world) and puzzle mechanics (rethinking social norms). We playtested with 50 players and used their ratings and comments to tune difficulty.", "dzh": "团队项目，我担任组长，负责游戏策划与程序实现。这是一款关于自我探索的 2D 平台跳跃游戏，理论基础来自弗洛伊德的梦的解析、人格结构理论以及自我决定理论（SDT）。三个阶段分别对应战斗（面对原始冲动与欲望）、平台跳跃（在现实中寻找平衡）和机制解谜（对社会规范的反思与超越）。我们邀请 50 位玩家试玩，并根据评分与反馈调整难度。", "imgs": ["assets/more/dream-07.jpg", "assets/more/dream-08.jpg", "assets/more/dream-09.jpg", "assets/more/dream-10.jpg"], "links": [], "badge": null}, "xianjie": {"more": 1, "en": "仙界逍遥录", "zh": "", "kind": ["Solo · Roguelite", "个人项目 · 肉鸽"], "tags": ["Unity", "C#", "Roguelite", "Pacing Design"], "den": "A solo survivor-style roguelite set in a xianxia world. Building on the Vampire Survivors formula, I designed a pacing controller that reads the player’s state and cycles enemy spawns through build-up, peak and cool-down phases, so tension rises and falls in a designed rhythm instead of only growing.", "dzh": "一款仙侠题材的个人幸存者类肉鸽游戏。在《吸血鬼幸存者》玩法的基础上，我设计了“游戏节奏控制器”：根据玩家当前状态，让敌人生成在铺垫、高峰与冷却三个阶段之间循环，使紧张感按设计好的节奏起伏，而不只是一味递增。", "imgs": ["assets/more/xianjie-01.jpg", "assets/more/xianjie-02.jpg", "assets/more/xianjie-03.jpg"], "links": [], "badge": null}, "oasis": {"more": 1, "en": "Oasis", "zh": "", "kind": ["Solo · City-building sim", "个人项目 · 模拟经营"], "tags": ["Unity", "Simulation", "Serious Game"], "den": "A solo city-building and management sim about the gap between caring for the environment and actually acting on it. Players plan a city that has to balance growth, residents’ happiness and ecological health; each building and event shows the long-term cost of a choice, aiming to turn awareness into action for younger players.", "dzh": "一款个人制作的城市建设与模拟经营游戏，关注“有环保意识却难以付诸行动”的问题。玩家需要在城市发展、居民幸福感与生态健康之间取得平衡；每一座建筑和每一次事件都会呈现选择的长期代价，希望帮助年轻玩家把环保意识转化为行动。", "imgs": ["assets/more/oasis-04.jpg", "assets/more/oasis-05.jpg", "assets/more/oasis-06.jpg"], "links": [], "badge": null}, "prompt": {"more": 1, "en": "Daily Prompt Helper", "zh": "", "kind": ["UX study · Non-game", "UX 练习 · 非游戏"], "tags": ["UX Research", "UI Design", "Usability Testing"], "den": "My one non-game project, a UX practice piece where I did the research and the UI. It is a tool that helps Midjourney users write accurate prompts. From desk research and user interviews I designed a structured prompt builder (subject, style, camera, parameters), explanations for jargon, one-click translation and image-to-text. Usability tests led to changes such as moving the builder into a floating panel inside the gallery.", "dzh": "唯一一个和游戏无关的作品，是一次 UX 练习，我负责用户研究与 UI 设计。这是一个帮助 Midjourney 用户写出准确提示词的工具。基于桌面调研与用户访谈，我设计了结构化的提示词构建器（主体、风格、镜头、参数）、术语解释、一键翻译和图生文功能；可用性测试后，又把构建器改为画廊内的悬浮面板等。", "imgs": ["assets/more/prompt-0.jpg", "assets/more/prompt-1.jpg", "assets/more/prompt-2.jpg", "assets/more/prompt-3.jpg", "assets/more/prompt-4.jpg", "assets/more/prompt-5.jpg", "assets/more/prompt-6.jpg", "assets/more/prompt-7.jpg"], "links": [], "badge": null}}};
+const MAIN_KEYS = ['zone','death','gluttony','protagonist'];
+const MORE_KEYS = ['sheep','zero','who','gold','oms','dream','xianjie','oasis','prompt'];
+const ALL = Object.assign({}, DATA.main, DATA.more);
+const KIND_MAIN = {zone:['Immersive · Unity','沉浸体验 · Unity'],death:['Speculative design','思辨设计'],gluttony:['Critical game · Unity','批判性游戏 · Unity'],protagonist:['Interactive installation','交互装置']};
+const COVER = k => 'assets/strip/' + k + '.jpg';
+const DUO = k => 'assets/strip/' + k + '-duo.jpg';
+const DL_BASE = 'https://github.com/ywen8019-tech/wynnyang.github.io/releases/download/whoami-v0.7.5/';
+const DL = {'#dl-mac':'WhoAmI_v0.7.5_Mac.dmg','#dl-win':'WhoAmI_v0.7.5_Windows_Setup.exe'};
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $ = s => document.querySelector(s);
+const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const wait = ms => new Promise(r => setTimeout(r, reduce ? 0 : ms));
+
+/* ---------- language ---------- */
+let lang = 'en';
+try { lang = localStorage.getItem('ywp-lang') || ((navigator.language || '').startsWith('zh') ? 'zh' : 'en'); } catch (e) {}
+const T = (en, zh) => lang === 'zh' ? zh : en;
+function applyLang() {
+  document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+  document.querySelectorAll('[data-en]').forEach(el => { el.textContent = lang === 'zh' ? el.dataset.zh : el.dataset.en; });
+  $('#langBtn').textContent = lang === 'zh' ? 'EN' : '中文';
+  syncSoundBtn();
+  renderQuick();
+  render();
+}
+$('#langBtn').onclick = () => { lang = lang === 'zh' ? 'en' : 'zh'; try { localStorage.setItem('ywp-lang', lang); } catch (e) {} applyLang(); };
+
+/* ---------- sound (tiny square-wave bleeps) ---------- */
+let soundOn = true, actx = null;
+try { soundOn = localStorage.getItem('ywp-sound') !== 'off'; } catch (e) {}
+function syncSoundBtn() { const b = $('#soundBtn'); b.setAttribute('aria-pressed', soundOn); b.textContent = soundOn ? T('SOUND ON', '音效 开') : T('SOUND OFF', '音效 关'); }
+$('#soundBtn').onclick = () => { soundOn = !soundOn; try { localStorage.setItem('ywp-sound', soundOn ? 'on' : 'off'); } catch (e) {} syncSoundBtn(); };
+function tone(freq, dur = .06, type = 'square', vol = .035, slide = 0) {
+  if (!soundOn) return;
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    const o = actx.createOscillator(), g = actx.createGain(), t = actx.currentTime;
+    o.type = type; o.frequency.setValueAtTime(freq, t); if (slide) o.frequency.exponentialRampToValueAtTime(freq * slide, t + dur);
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    o.connect(g).connect(actx.destination); o.start(t); o.stop(t + dur + .02);
+  } catch (e) {}
+}
+const sfx = {
+  move: () => tone(880, .04),
+  ok: () => { tone(660, .05); setTimeout(() => tone(990, .07), 60); },
+  back: () => tone(330, .07),
+  insert: () => tone(220, .25, 'sawtooth', .03, 3),
+  boot: () => { [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => tone(f, .09, 'square', .03), i * 90)); },
+  whir: () => tone(140, .5, 'triangle', .04, 1.6),
+  prize: () => { [784, 988, 1175].forEach((f, i) => setTimeout(() => tone(f, .08), i * 80)); },
+};
+
+/* ---------- cartridge rack ---------- */
+function buildCarts() {
+  $('#carts').innerHTML = MAIN_KEYS.map((k, i) => {
+    const P = ALL[k];
+    return `<button class="cart" data-cart="${k}" aria-label="${esc(P.en)}"><span class="cart-label"><img src="${DUO(k)}" alt="" loading="lazy"><img class="col" src="${COVER(k)}" alt="" loading="lazy"><span class="cart-name">${esc(P.en)}</span></span><span class="cart-foot"><span>0${i + 1}</span><span>▲ INSERT</span></span></button>`;
+  }).join('');
+  document.querySelectorAll('.cart').forEach(c => c.addEventListener('click', () => insertCart(c.dataset.cart)));
+}
+
+/* ---------- console state machine ---------- */
+const MENU = [
+  {id: 'main', en: 'MAIN QUESTS', zh: '主线任务', note: ['4 carts', '4 盒卡带']},
+  {id: 'side', en: 'SIDE QUESTS', zh: '支线任务', note: ['9 capsules', '9 颗扭蛋']},
+  {id: 'save', en: 'SAVE FILE', zh: '存档 · 关于我', note: ['LV.MA', 'LV.MA']},
+  {id: 'ach', en: 'ACHIEVEMENTS', zh: '成就', note: ['8/8', '8/8']},
+  {id: 'credits', en: 'CREDITS', zh: '制作人员 · 联系', note: ['', '']},
+];
+const ACH = [
+  ['Shipped on Steam', '上架 Steam', 'Hoooook · gold-miner × roguelite', 'Hoooook · 黄金矿工 × 肉鸽'],
+  ['Two tours at NetEase', '网易两段实习', 'Identity V · Fantasy Westward Journey Mobile', '《第五人格》·《梦幻西游》手游'],
+  ['Jam survivor ×2', 'Game Jam ×2', 'GMTK 2026 · TapTap Spotlight 21-day', 'GMTK 2026 · TapTap 聚光灯 21 天'],
+  ['23 playtesters', '23 位试玩玩家', 'Three test rounds on Who Am I?', 'Who Am I? 三轮试玩测试'],
+  ['Party leader', '队长', 'Led the team on 梦我 · 50-player playtest', '带队完成《梦我》· 50 人试玩'],
+  ['Made a game for Mom', '给妈妈做了个游戏', 'Letter of the Flying Sheep', 'Letter of the Flying Sheep'],
+  ['Exhibited', '参展', 'Be Protagonist · In the Zone · The Fourth Death', 'Be Protagonist · In the Zone · The Fourth Death'],
+  ['Piano · Level 10', '钢琴十级', 'Rhythm carried into motion design', '把节奏感带进动效设计'],
+];
+let state = 'boot', cursor = 0, inserted = null, clawIdx = 4, busy = false;
+
+function screenFlick() { const s = $('#screen'); s.classList.remove('flick'); void s.offsetWidth; s.classList.add('flick'); }
+function setState(s, c = 0) { state = s; cursor = c; screenFlick(); render(); }
+
+function render() {
+  const scr = $('#scr');
+  scr.className = 'scr';
+  document.querySelectorAll('.cart').forEach(c => c.classList.toggle('hl', state === 'mainlist' && c.dataset.cart === MAIN_KEYS[cursor]));
+  $('#cabinet').classList.toggle('live', state === 'side');
+  if (state === 'boot') {
+    scr.classList.add('boot');
+    scr.innerHTML = `<div class="logo">YW</div><div class="who">YANGFAN WEN</div><div class="press">${T('PRESS START', '按 START 开始')}</div>`;
+    return;
+  }
+  if (state === 'menu') {
+    scr.innerHTML = `<h3><span>${T('MAIN MENU', '主菜单')}</span><span>P1</span></h3><ul class="list">${MENU.map((m, i) => `<li><button class="item${i === cursor ? ' sel' : ''}" data-i="${i}">${T(m.en, m.zh)}<small>${T(...m.note)}</small></button></li>`).join('')}</ul><div class="foot"><span>A ${T('OK', '确认')}</span><span>SELECT ${T('QUICK VIEW', '速览')}</span></div>`;
+  } else if (state === 'mainlist') {
+    scr.innerHTML = `<h3><span>${T('MAIN QUESTS', '主线任务')}</span><span>${cursor + 1}/4</span></h3><ul class="list">${MAIN_KEYS.map((k, i) => `<li><button class="item${i === cursor ? ' sel' : ''}" data-i="${i}">0${i + 1} ${esc(ALL[k].en)}</button></li>`).join('')}</ul><div class="foot"><span>A ${T('INSERT', '插入')}</span><span>B ${T('BACK', '返回')}</span></div>`;
+  } else if (state === 'title') {
+    const P = ALL[inserted], i = MAIN_KEYS.indexOf(inserted);
+    scr.classList.add('title-card');
+    scr.innerHTML = `<div class="tc-img"><img src="${COVER(inserted)}" alt=""></div><div class="tc-body"><span class="tc-k">QUEST 0${i + 1} · ${T(...KIND_MAIN[inserted])}</span><span class="tc-t">${esc(P.en)}</span><span class="tc-k">${esc(P.zh)}</span><div class="foot"><span class="press">▶ A ${T('START', '开始')}</span><span>B ${T('EJECT', '退出')}</span></div></div>`;
+  } else if (state === 'side') {
+    scr.innerHTML = `<h3><span>${T('SIDE QUESTS', '支线任务')}</span><span>${cursor + 1}/9</span></h3><ul class="list">${MORE_KEYS.map((k, i) => `<li><button class="item${i === cursor ? ' sel' : ''}" data-i="${i}">${esc(ALL[k].en)}</button></li>`).join('')}</ul><div class="foot"><span>A ${T('GRAB', '抓取')} →</span><span>B ${T('BACK', '返回')}</span></div>`;
+  } else if (state === 'save') {
+    scr.innerHTML = `<h3><span>${T('SAVE FILE 01', '存档 01')}</span><span>♥♥♥</span></h3>
+      <dl class="stat">
+        <dt>${T('NAME', '姓名')}</dt><dd>Yangfan Wen · 温杨帆</dd>
+        <dt>${T('CLASS', '职业')}</dt><dd>${T('Game Interaction Designer', '游戏交互设计师')}</dd>
+        <dt>${T('BASE', '所在地')}</dt><dd>${T('London', '伦敦')}</dd>
+        <dt>${T('LEVEL', '等级')}</dt><dd>MA Games Design · UAL</dd>
+        <dt>${T('PREV', '前作')}</dt><dd>BA Interaction · GAFA</dd>
+        <dt>${T('GUILD', '公会')}</dt><dd>NetEase Games ×2</dd>
+        <dt>UX</dt><dd><span class="bar" style="width:86%"></span></dd>
+        <dt>${T('PROTO', '原型')}</dt><dd><span class="bar" style="width:78%"></span></dd>
+        <dt>3D</dt><dd><span class="bar" style="width:64%"></span></dd>
+      </dl><div class="foot"><span>B ${T('BACK', '返回')}</span><span>${T('ABOUT ME ↗ top right', '右上角看个人网站')}</span></div>`;
+  } else if (state === 'ach') {
+    scr.innerHTML = `<h3><span>${T('ACHIEVEMENTS', '成就')}</span><span>8/8</span></h3><div class="list" id="achList">${ACH.map((a, i) => `<div class="ach${i === cursor ? ' sel' : ''}"><i class="tro"></i><div><b>${T(a[0], a[1])}</b><span>${T(a[2], a[3])}</span></div></div>`).join('')}</div><div class="foot"><span>↑↓ ${T('SCROLL', '滚动')}</span><span>B ${T('BACK', '返回')}</span></div>`;
+  } else if (state === 'credits') {
+    const items = [
+      [T('EMAIL', '邮箱'), 'ywen8019@gmail.com', 'mail'],
+      [T('CURRICULUM VITAE', '简历'), T('View CV', '查看简历'), 'cv'],
+      [T('PERSONAL SITE', '个人网站'), T('Open ↗', '打开 ↗'), 'site'],
+      [T('BACK TO MENU', '返回菜单'), '', 'menu'],
+    ];
+    scr.innerHTML = `<h3><span>${T('CREDITS', '制作人员表')}</span><span>THE END?</span></h3><p style="font-size:15px;color:var(--ph-dim);margin-bottom:6px">${T('Design, code & coffee — Yangfan Wen', '设计、代码与咖啡 — 温杨帆')}</p><ul class="list">${items.map((it, i) => `<li><button class="item${i === cursor ? ' sel' : ''}" data-i="${i}" data-act="${it[2]}">${it[0]}<small>${it[1]}</small></button></li>`).join('')}</ul><div class="foot"><span>A ${T('OPEN', '打开')}</span><span>B ${T('BACK', '返回')}</span></div>`;
+  }
+  scr.querySelectorAll('.item').forEach(b => b.addEventListener('click', () => { cursor = +b.dataset.i; press('a', true); }));
+  keepInList(scr.querySelector('.item.sel, .ach.sel'));
+}
+
+function keepInList(el) { if (!el) return; const box = el.closest('.list'); if (!box) return; const t = el.offsetTop - box.offsetTop, b = t + el.offsetHeight; if (t < box.scrollTop) box.scrollTop = t; else if (b > box.scrollTop + box.clientHeight) box.scrollTop = b - box.clientHeight; }
+function listLen() { return {menu: MENU.length, mainlist: 4, side: 9, ach: ACH.length, credits: 4}[state] || 0; }
+
+function press(k, fromTouch) {
+  if (busy && k !== 'b') return;
+  if (state === 'boot') { if (k === 'a' || k === 'start' || fromTouch) { sfx.boot(); $('#led').classList.add('on'); setState('menu'); } return; }
+  if (k === 'select') { sfx.ok(); openQuick(); return; }
+  if (k === 'start') { sfx.back(); if (inserted) ejectCart(); setState('menu'); return; }
+  const n = listLen();
+  if (k === 'up' || k === 'left' || k === 'down' || k === 'right') {
+    if (state === 'title') return;
+    const step = (k === 'up' || k === 'left') ? -1 : 1;
+    if (n) { cursor = (cursor + step + n) % n; sfx.move(); render(); if (state === 'side') aimClaw(cursor); }
+    return;
+  }
+  if (k === 'b') {
+    if (busy) return;
+    sfx.back();
+    if (state === 'title') { ejectCart(); setState('mainlist', MAIN_KEYS.indexOf(inserted) >= 0 ? MAIN_KEYS.indexOf(inserted) : 0); inserted = null; return; }
+    if (state !== 'menu') setState('menu', Math.max(0, MENU.findIndex(m => m.id === ({mainlist: 'main', side: 'side', save: 'save', ach: 'ach', credits: 'credits'}[state]))));
+    return;
+  }
+  if (k === 'a') {
+    if (state === 'menu') {
+      sfx.ok(); const id = MENU[cursor].id;
+      if (id === 'main') setState('mainlist'); else if (id === 'side') { setState('side', clawIdx); aimClaw(clawIdx); } else setState(id);
+    } else if (state === 'mainlist') insertCart(MAIN_KEYS[cursor]);
+    else if (state === 'title') { sfx.ok(); openManual(inserted); }
+    else if (state === 'side') grab(cursor);
+    else if (state === 'credits') {
+      const act = ['mail', 'cv', 'site', 'menu'][cursor]; sfx.ok();
+      if (act === 'mail') copyEmail(); else if (act === 'cv') openCV(); else if (act === 'site') window.open('https://ywen8019-tech.github.io/wynnyang.github.io/', '_blank', 'noopener'); else setState('menu', 4);
+    }
+  }
+}
+function copyEmail() {
+  const e = 'ywen8019@gmail.com';
+  (navigator.clipboard ? navigator.clipboard.writeText(e) : Promise.reject()).then(() => toast(T('Email copied: ', '已复制邮箱：') + e), () => toast(e));
+}
+
+/* ---------- insert / eject (cartridge flies into the slot) ---------- */
+async function insertCart(k) {
+  if (busy) return;
+  if (inserted === k && state === 'title') return;
+  if (inserted) ejectCart(true);
+  busy = true; inserted = k; sfx.insert();
+  const src = document.querySelector(`.cart[data-cart="${k}"]`), slot = $('#slotCart');
+  slot.querySelector('img').src = COVER(k);
+  if (!reduce && src) {
+    const a = src.getBoundingClientRect(), b = slot.getBoundingClientRect();
+    const fly = src.cloneNode(true); fly.classList.add('flyer'); fly.classList.remove('hl');
+    Object.assign(fly.style, {left: a.left + 'px', top: a.top + 'px', width: a.width + 'px', height: a.height + 'px', margin: 0});
+    document.body.appendChild(fly); src.classList.add('out');
+    const sx = b.width / a.width, dy = (b.top - 30) - a.top, dx = (b.left + b.width / 2) - (a.left + a.width / 2);
+    requestAnimationFrame(() => { fly.style.transform = `translate(${dx}px,${dy}px) scale(${sx})`; });
+    await wait(700);
+    fly.style.transition = 'transform .25s ease-in,opacity .2s'; fly.style.transform = `translate(${dx}px,${dy + 40}px) scale(${sx})`; fly.style.opacity = '0';
+    await wait(180); fly.remove();
+  } else if (src) src.classList.add('out');
+  slot.classList.remove('gone');
+  await wait(260);
+  busy = false; $('#led').classList.add('on'); setState('title');
+}
+function ejectCart(silent) {
+  const slot = $('#slotCart'); slot.classList.add('gone');
+  document.querySelectorAll('.cart.out').forEach(c => c.classList.remove('out'));
+  if (!silent) inserted = inserted;
+}
+
+/* ---------- claw machine ---------- */
+const capLayout = [ [.36,.86],[.52,.88],[.68,.87],[.84,.86],[.44,.70],[.60,.71],[.76,.70],[.52,.54],[.68,.55] ];
+let caps = [];
+function buildCaps() {
+  const g = $('#glass');
+  g.querySelectorAll('.cap').forEach(c => c.remove());
+  caps = MORE_KEYS.map((k, i) => {
+    const el = document.createElement('button');
+    el.className = 'cap'; el.dataset.i = i; el.setAttribute('aria-label', ALL[k].en);
+    el.innerHTML = `<span class="shell"></span><span class="win"><img src="${COVER(k)}" alt="" loading="lazy"></span><span class="shine"></span>`;
+    el.addEventListener('click', () => { if (busy) return; cursor = i; if (state !== 'side') setState('side', i); else render(); aimClaw(i); setTimeout(() => grab(i), 40); });
+    el.addEventListener('mouseenter', () => showTip(i)); el.addEventListener('mouseleave', hideTip);
+    g.appendChild(el);
+    return {k, el};
+  });
+  layoutCaps();
+}
+function homeXY(i) { const g = $('#glass'); return [capLayout[i][0] * g.clientWidth, capLayout[i][1] * g.clientHeight]; }
+function layoutCaps() { caps.forEach((c, i) => { const [x, y] = homeXY(i); c.el.style.left = x + 'px'; c.el.style.top = y + 'px'; }); }
+function showTip(i) { const t = $('#capTip'), [x, y] = homeXY(i); t.textContent = ALL[MORE_KEYS[i]].en; t.style.left = x + 'px'; t.style.top = (y - 36) + 'px'; t.style.opacity = 1; }
+function hideTip() { $('#capTip').style.opacity = 0; }
+function setCarriage(x) { $('#carriage').style.left = x + 'px'; }
+function setCable(h) { $('#cable').style.height = h + 'px'; }
+function aimClaw(i) { if (busy) return; clawIdx = i; caps.forEach((c, j) => c.el.classList.toggle('target', j === i)); setCarriage(homeXY(i)[0]); }
+async function grab(i) {
+  if (busy) return; busy = true; clawIdx = i; hideTip();
+  const c = caps[i], [x, y] = homeXY(i), head = $('#head');
+  caps.forEach((cc, j) => cc.el.classList.toggle('target', j === i));
+  setCarriage(x); sfx.whir(); await wait(620);
+  head.classList.add('open'); setCable(Math.max(20, y - 12 - 62)); await wait(760);
+  head.classList.remove('open'); sfx.move(); await wait(260);
+  setCable(40); c.el.style.top = (12 + 40 + 30 + 22) + 'px'; c.el.style.zIndex = 7; await wait(760);
+  const chuteX = 8 + 35; setCarriage(chuteX); c.el.style.left = chuteX + 'px'; sfx.whir(); await wait(660);
+  head.classList.add('open'); c.el.style.top = ($('#glass').clientHeight + 40) + 'px'; await wait(420);
+  head.classList.remove('open'); sfx.prize();
+  busy = false; openManual(c.k, () => respawn(i));
+}
+function respawn(i) {
+  const c = caps[i]; c.el.style.transition = 'none'; c.el.classList.add('gone');
+  const [x, y] = homeXY(i); c.el.style.left = x + 'px'; c.el.style.top = (y - 60) + 'px'; c.el.style.zIndex = 3;
+  void c.el.offsetWidth; setTimeout(() => { c.el.style.transition = ''; c.el.classList.remove('gone'); c.el.style.top = y + 'px'; }, 30);
+}
+$('#clawL').onclick = () => { if (state !== 'side') setState('side', clawIdx); press('left'); };
+$('#clawR').onclick = () => { if (state !== 'side') setState('side', clawIdx); press('right'); };
+$('#grabBtn').onclick = () => { if (state !== 'side') { setState('side', clawIdx); } grab(cursor = clawIdx); };
+addEventListener('resize', () => { if (!busy) { layoutCaps(); setCarriage(homeXY(clawIdx)[0]); } });
+
+/* ---------- manual (project detail) ---------- */
+let mKey = null, mOnClose = null, lastFocus = null;
+function group(k) { return MAIN_KEYS.includes(k) ? MAIN_KEYS : MORE_KEYS; }
+function openManual(k, onClose) {
+  const P = ALL[k], isMain = MAIN_KEYS.includes(k), m = $('#manual');
+  mKey = k; if (onClose !== undefined) mOnClose = onClose;
+  $('#mCover').src = COVER(k);
+  $('#mNum').textContent = isMain ? 'MAIN QUEST 0' + (MAIN_KEYS.indexOf(k) + 1) : 'SIDE QUEST';
+  $('#mKind').textContent = isMain ? T(...KIND_MAIN[k]) : T(P.kind[0], P.kind[1]);
+  $('#mTitle').textContent = P.en;
+  $('#mSub').textContent = P.zh || '';
+  $('#mDesc').innerHTML = (P.badge ? `<span class="m-badge">${esc(T(P.badge[0], P.badge[1]))}</span>` : '') + esc(T(P.den, P.dzh));
+  $('#mTags').innerHTML = P.tags.map(t => `<span>${esc(t)}</span>`).join('');
+  $('#mLinks').innerHTML = (P.links || []).map(([l, u, ic]) => {
+    if (u === '#watch') return `<button class="btn solid" data-act="watch">▶ ${T('Watch intro video', '观看介绍视频')}</button>`;
+    if (u === '#play-sheep') return `<button class="btn solid" data-act="play">▶ ${T('Play in browser', '在线试玩')}</button>`;
+    if (u.startsWith('#dl')) return `<a class="btn" href="${DL_BASE + DL[u]}" rel="noopener">↓ ${T(l, u === '#dl-mac' ? 'Mac 版下载' : 'Windows 版下载')}</a>`;
+    return `<a class="btn" href="${esc(u)}" target="_blank" rel="noopener">${ic || '▶'} ${esc(l)}</a>`;
+  }).join('');
+  const note = $('#mNote'); note.hidden = !P.note; note.textContent = P.note ? T(P.note[0], P.note[1]) : '';
+  const g = $('#mGallery'); g.className = 'm-gallery' + (['sheep', 'zero', 'gold', 'oms', 'who'].includes(k) ? ' shots' : '');
+  g.innerHTML = P.imgs.length ? P.imgs.map((s, i) => `<img src="${s}" alt="${esc(P.en)} — ${i + 1}" loading="${i < 2 ? 'eager' : 'lazy'}">`).join('') : `<p class="m-empty">${T('More on the project page.', '详见项目页面。')}</p>`;
+  const G = group(k), i = G.indexOf(k), pv = G[(i + G.length - 1) % G.length], nx = G[(i + 1) % G.length];
+  $('#mPrev').innerHTML = `<small>${T('← PREVIOUS', '← 上一个')}</small>${esc(ALL[pv].en)}`; $('#mPrev').onclick = () => openManual(pv);
+  $('#mNext').innerHTML = `<small>${T('NEXT →', '下一个 →')}</small>${esc(ALL[nx].en)}`; $('#mNext').onclick = () => openManual(nx);
+  m.scrollTop = 0;
+  if (m.hidden) { lastFocus = document.activeElement; m.hidden = false; requestAnimationFrame(() => m.classList.add('show')); document.body.style.overflow = 'hidden'; $('#mClose').focus(); }
+}
+async function closeManual() {
+  const m = $('#manual'); if (m.hidden) return;
+  m.classList.remove('show'); await wait(300); m.hidden = true; document.body.style.overflow = '';
+  if (mOnClose) { const f = mOnClose; mOnClose = null; f(); }
+  if (lastFocus) lastFocus.focus();
+}
+$('#mClose').onclick = closeManual;
+$('#mLinks').addEventListener('click', e => { const b = e.target.closest('[data-act]'); if (!b) return; if (b.dataset.act === 'watch') openVideo(ALL[mKey]); if (b.dataset.act === 'play') openGame(); });
+
+/* ---------- viewer ---------- */
+function openViewer(title, html, act) { $('#vTitle').textContent = title; $('#vBody').innerHTML = html; $('#vAct').innerHTML = act || ''; $('#viewer').hidden = false; document.body.style.overflow = 'hidden'; $('#vClose').focus(); }
+function closeViewer() { $('#viewer').hidden = true; $('#vBody').innerHTML = ''; if ($('#manual').hidden && $('#quick').hidden) document.body.style.overflow = ''; }
+function openVideo(P) { openViewer(P.en + T(' · INTRO VIDEO', ' · 介绍视频'), `<video controls autoplay playsinline poster="${COVER('who')}" src="${P.video}"></video>`); }
+function openGame() {
+  openViewer('Letter of the Flying Sheep', '<iframe title="Letter of the Flying Sheep" allow="autoplay; fullscreen"></iframe>');
+  const f = $('#vBody iframe');
+  fetch('play/flying-sheep.html').then(r => { if (!r.ok) throw 0; return r.text(); }).then(t => { f.srcdoc = t; }).catch(() => { f.src = 'play/flying-sheep.html'; });
+}
+function openCV() { openViewer(T('CURRICULUM VITAE', '简历'), '<img class="cv" src="assets/cv/cv-p01.jpg" alt="Yangfan Wen CV">', `<a class="btn" data-dl href="Yangfan_Wen_CV.pdf" download="Yangfan_Wen_CV.pdf">${T('Download PDF', '下载 PDF')}</a>`); }
+$('#vClose').onclick = closeViewer;
+
+/* ---------- quick view ---------- */
+function card(k) { const P = ALL[k]; return `<button class="q-card" data-k="${k}"><img src="${COVER(k)}" alt="" loading="lazy"><div><span>${esc(MAIN_KEYS.includes(k) ? T(...KIND_MAIN[k]) : T(P.kind[0], P.kind[1]))}</span><b>${esc(P.en)}</b></div></button>`; }
+function renderQuick() { $('#qMain').innerHTML = MAIN_KEYS.map(card).join(''); $('#qMore').innerHTML = MORE_KEYS.map(card).join(''); }
+function openQuick() { $('#quick').hidden = false; document.body.style.overflow = 'hidden'; $('#qClose').focus(); }
+function closeQuick() { $('#quick').hidden = true; if ($('#manual').hidden) document.body.style.overflow = ''; }
+$('#quickBtn').onclick = openQuick; $('#qClose').onclick = closeQuick;
+$('#quick').addEventListener('click', e => { const c = e.target.closest('.q-card'); if (c) openManual(c.dataset.k); });
+
+/* ---------- input ---------- */
+function flashKey(k) { const b = document.querySelector(`[data-k="${k}"]`); if (!b) return; b.classList.add('press'); setTimeout(() => b.classList.remove('press'), 120); }
+document.querySelectorAll('[data-k]').forEach(b => b.addEventListener('click', () => press(b.dataset.k, true)));
+$('#screen').addEventListener('click', e => { if (state === 'boot') press('a', true); });
+const KEYMAP = {ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right', Enter: 'a', ' ': 'a', z: 'a', Z: 'a', Escape: 'b', Backspace: 'b', x: 'b', X: 'b', s: 'start', S: 'start', Shift: 'select'};
+const KONAMI = ['up', 'up', 'down', 'down', 'left', 'right', 'left', 'right', 'b', 'a']; let kseq = [];
+addEventListener('keydown', e => {
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  if (!$('#viewer').hidden) { if (e.key === 'Escape') { e.preventDefault(); closeViewer(); } return; }
+  if (!$('#manual').hidden) { if (e.key === 'Escape' || e.key === 'Backspace') { e.preventDefault(); closeManual(); } if (e.key === 'ArrowRight') $('#mNext').click(); if (e.key === 'ArrowLeft') $('#mPrev').click(); return; }
+  if (!$('#quick').hidden) { if (e.key === 'Escape') { e.preventDefault(); closeQuick(); } return; }
+  if (e.target.closest && e.target.closest('a,input,textarea')) return;
+  const k = KEYMAP[e.key]; if (!k) return;
+  if (e.key === ' ' && e.target.closest && e.target.closest('button') && !e.target.closest('#screen')) return;
+  e.preventDefault(); flashKey(k); press(k);
+  kseq.push(k); kseq = kseq.slice(-10);
+  if (kseq.join() === KONAMI.join()) { document.body.classList.toggle('gold'); sfx.prize(); toast(T('GOLD EDITION UNLOCKED', '解锁：黄金限定版')); }
+});
+let tt; function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(tt); tt = setTimeout(() => t.classList.remove('show'), 2200); }
+
+/* ---------- boot ---------- */
+buildCarts(); buildCaps(); applyLang(); setCarriage(homeXY(clawIdx)[0]);
+setTimeout(() => { if (state === 'boot') { $('#led').classList.add('on'); setState('menu'); } }, reduce ? 0 : 3200);
+</script>
+</body>
+</html>
