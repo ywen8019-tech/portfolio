@@ -23,7 +23,7 @@
   --ease:cubic-bezier(.22,.8,.2,1);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{background:var(--bg);color:var(--ink)}
+html,body{background:var(--bg);color:var(--ink);overflow-x:clip}
 body{font-family:var(--sans);font-weight:300;min-height:100vh;min-height:100svh;overflow-x:hidden;-webkit-font-smoothing:antialiased;
   background:radial-gradient(70% 60% at 50% 38%,#1b1815 0%,var(--bg) 70%) fixed}
 body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:300;opacity:.05;
@@ -281,7 +281,61 @@ body.gold .badge b,body.gold .badge span,body.gold .bezel-tag{color:#3a3026}
 .flyer{position:fixed;z-index:60;pointer-events:none;transition:transform .7s var(--ease),opacity .3s}
 
 /* ---------- responsive ---------- */
+
+/* ---------- stage lighting, dust, depth ---------- */
+#dust{position:fixed;inset:0;z-index:0;pointer-events:none}
+.top,.stage{position:relative;z-index:1}
+.lit{position:relative;isolation:isolate}
+.lit::before{content:"";position:absolute;left:50%;bottom:-40px;width:150%;height:calc(100% + 60vh);transform:translateX(-50%);z-index:-1;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,238,206,.13),rgba(255,238,206,.05) 70%,transparent),radial-gradient(60% 40% at 50% 0%,rgba(255,236,204,.12),transparent 70%);clip-path:polygon(44% 0,56% 0,100% 100%,0 100%);animation:lamp 7s ease-in-out infinite}
+.lit::after{content:"";position:absolute;left:8%;right:8%;bottom:-34px;height:46px;z-index:-1;pointer-events:none;border-radius:50%;
+  background:radial-gradient(closest-side,rgba(226,200,150,.10),rgba(0,0,0,.55) 55%,transparent);filter:blur(6px)}
+@keyframes lamp{0%,100%{opacity:1}48%{opacity:.86}50%{opacity:.7}52%{opacity:.9}}
+.console,.cabinet,.carts{will-change:transform;transform-style:preserve-3d}
+.spec{position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:4;mix-blend-mode:screen;
+  background:radial-gradient(circle at var(--sx,30%) var(--sy,18%),rgba(255,244,222,.13),transparent 42%)}
+/* CRT */
+.roll{position:absolute;left:0;right:0;top:-30%;height:30%;z-index:4;pointer-events:none;background:linear-gradient(transparent,rgba(255,240,210,.06),transparent);animation:rollbar 7s linear infinite}
+@keyframes rollbar{to{top:110%}}
+.screen.flick .scr{animation:flick .38s steps(2),wipe .32s steps(8)}
+@keyframes wipe{from{clip-path:inset(0 0 100% 0)}to{clip-path:inset(0)}}
+.scr.split{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);grid-template-rows:auto minmax(0,1fr) auto;column-gap:8px}
+.scr.split h3,.scr.split .foot{grid-column:1/-1}
+.scr.split .item{font-size:17px}
+.pv{position:relative;overflow:hidden;border:1px solid rgba(216,192,143,.35);background:#0b0a08;min-height:0}
+.pv img{width:100%;height:100%;object-fit:cover;image-rendering:pixelated;opacity:0;transition:opacity .2s steps(3)}
+.pv img.ok{opacity:1}
+.pv::after{content:"";position:absolute;inset:0;box-shadow:inset 0 0 12px rgba(0,0,0,.8)}
+.title-card .tc-img img{image-rendering:pixelated;filter:none;opacity:0;transition:opacity .25s steps(4)}
+.title-card .tc-img img.ok{opacity:1}
+/* iris transition */
+.iris{position:fixed;inset:0;z-index:95;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.3) 0 1px,transparent 1px 3px),radial-gradient(circle at var(--ix) var(--iy),#1c1914,#0b0a09 70%);
+  clip-path:circle(0px at var(--ix) var(--iy));transition:clip-path .6s cubic-bezier(.7,0,.2,1)}
+.iris.open{clip-path:circle(150vmax at var(--ix) var(--iy))}
+/* claw extras */
+.cap{--tint:rgba(226,214,194,.55)}
+.cap .shell{background:linear-gradient(180deg,var(--tint) 0 50%,#16130f 50% 100%)}
+.cap:hover:not(.held){animation:wob .5s ease-in-out}
+@keyframes wob{25%{rotate:-9deg}75%{rotate:9deg}}
+.marquee b{animation:neon 5s infinite}
+@keyframes neon{0%,90%,100%{text-shadow:0 0 8px rgba(243,220,168,.75),0 0 18px rgba(243,220,168,.25);opacity:1}91%,93%{text-shadow:none;opacity:.55}92%{opacity:1}}
+.spark{position:fixed;z-index:96;width:5px;height:5px;border-radius:1px;background:var(--gold-hi);box-shadow:0 0 8px #f3dca8;pointer-events:none;animation:spark .75s ease-out forwards}
+@keyframes spark{to{transform:translate(var(--dx),var(--dy)) rotate(180deg) scale(.2);opacity:0}}
+/* exploration */
+.cart.seen .cart-foot span:first-child::after,.q-card.seen b::after{content:" \2605";color:var(--gold-hi)}
+.cap.seen::before{content:"\2605";position:absolute;right:-2px;top:-4px;z-index:4;font-size:12px;color:var(--gold-hi);text-shadow:0 0 6px rgba(243,220,168,.8)}
+.achv{position:fixed;right:max(20px,env(safe-area-inset-right,0px));top:76px;z-index:410;display:flex;gap:12px;align-items:center;min-width:250px;padding:12px 16px 12px 12px;border-radius:10px;
+  background:linear-gradient(135deg,#221e1a,#12100e);box-shadow:0 0 0 1px rgba(226,214,194,.35),0 20px 40px rgba(0,0,0,.6);transform:translateX(130%);transition:transform .5s var(--ease)}
+.achv.show{transform:none}
+.achv .tro{flex:none;width:36px;height:36px;border-radius:8px;display:grid;place-items:center;background:radial-gradient(circle at 35% 30%,#efe3cc,#b9a88f 55%,#7d6f5b);color:#2a241d;font-size:18px;box-shadow:0 0 16px rgba(243,220,168,.35)}
+.achv small{display:block;font-family:var(--chip);font-size:8.5px;letter-spacing:.14em;color:var(--gold)}
+.achv b{display:block;font-weight:500;font-size:14px;color:var(--ink)}
+.achv span{display:block;font-size:12px;color:var(--muted)}
+.pill.quest{border-color:rgba(185,168,143,.55);color:var(--gold-hi)}
+
 @media (max-width:1080px){
+  .rack.lit::before,.claw-zone.lit::before{display:none}
+  .lit::before{width:120%;height:calc(100% + 30vh)}
   .stage{grid-template-columns:1fr;justify-items:center;gap:36px;min-height:0}
   .rack,.claw-zone{justify-self:center;width:min(100%,560px)}
   .console-wrap{order:-1}
@@ -291,6 +345,7 @@ body.gold .badge b,body.gold .badge span,body.gold .bezel-tag{color:#3a3026}
 }
 @media (max-width:560px){
   .brand span{display:none}
+  .achv{left:16px;right:16px;min-width:0;top:64px}
   .console{width:min(88vw,340px)}
   .carts{grid-template-columns:repeat(2,minmax(0,1fr))}
   .claw-zone{width:min(100%,340px)}
@@ -299,14 +354,16 @@ body.gold .badge b,body.gold .badge span,body.gold .bezel-tag{color:#3a3026}
   .screen{font-size:18px}
   .scr .item{font-size:18px}
 }
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.iris{display:none}}
 </style>
 </head>
 <body>
 
+<canvas id="dust" aria-hidden="true"></canvas>
 <header class="top">
   <div class="brand"><b>YW</b><span>PORTFOLIO SYSTEM · 2026</span></div>
   <div class="top-r">
+    <button class="pill quest" id="questBtn">QUEST LOG 0/13</button>
     <button class="pill" id="quickBtn" data-en="QUICK VIEW" data-zh="速览全部">QUICK VIEW</button>
     <a class="pill" href="https://ywen8019-tech.github.io/wynnyang.github.io/" target="_blank" rel="noopener" data-en="ABOUT ME ↗" data-zh="个人网站 ↗">ABOUT ME ↗</a>
     <button class="pill" id="soundBtn" aria-pressed="true" data-en="SOUND ON" data-zh="音效 开">SOUND ON</button>
@@ -316,21 +373,22 @@ body.gold .badge b,body.gold .badge span,body.gold .bezel-tag{color:#3a3026}
 
 <main class="stage">
   <!-- MAIN QUESTS: cartridge rack -->
-  <section class="rack" aria-labelledby="rackLabel">
+  <section class="rack lit" aria-labelledby="rackLabel">
     <div class="zone-label" id="rackLabel"><span data-en="MAIN QUESTS" data-zh="主线任务">MAIN QUESTS</span><i data-en="· SELECTED WORK" data-zh="· 精选作品">· SELECTED WORK</i></div>
     <div class="carts" id="carts"></div>
     <p class="rack-note" data-en="Pick a cartridge to insert it into the console." data-zh="选一盒卡带，插进掌机开始游戏。">Pick a cartridge to insert it into the console.</p>
   </section>
 
   <!-- CONSOLE -->
-  <div class="console-wrap">
+  <div class="console-wrap lit">
     <div class="console" id="console">
+      <span class="spec" id="spec"></span>
       <div class="slot"></div>
       <div class="slot-cart gone" id="slotCart" aria-hidden="true"><span class="cart-label"><img class="col" alt=""></span></div>
       <div class="bezel">
         <div class="bezel-tag">DOT MATRIX · INTERACTION SYSTEM</div>
         <span class="led" id="led"></span><span class="led-txt">POWER</span>
-        <div class="screen" id="screen" role="application" aria-label="Console screen"><div class="scr" id="scr"></div></div>
+        <div class="screen" id="screen" role="application" aria-label="Console screen"><div class="scr" id="scr"></div><i class="roll"></i></div>
       </div>
       <div class="badge"><b>YW<i>-01</i></b><span>PORTFOLIO EDITION</span></div>
       <div class="controls">
@@ -356,7 +414,7 @@ body.gold .badge b,body.gold .badge span,body.gold .bezel-tag{color:#3a3026}
   </div>
 
   <!-- SIDE QUESTS: claw machine -->
-  <section class="claw-zone" aria-labelledby="clawLabel">
+  <section class="claw-zone lit" aria-labelledby="clawLabel">
     <div class="zone-label" id="clawLabel"><span data-en="SIDE QUESTS" data-zh="支线任务">SIDE QUESTS</span><i data-en="· MORE WORK" data-zh="· 更多作品">· MORE WORK</i></div>
     <div class="cabinet" id="cabinet">
       <div class="marquee"><div class="bulbs"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
@@ -419,6 +477,8 @@ body.gold .badge b,body.gold .badge span,body.gold .bezel-tag{color:#3a3026}
 </div>
 
 <div class="toast" id="toast"></div>
+<div class="iris" id="iris" hidden></div>
+<div class="achv" id="achv" role="status" aria-live="polite"><span class="tro">★</span><div><small id="achvK"></small><b id="achvT"></b><span id="achvS"></span></div></div>
 
 <script>
 const DATA = {"main": {"zone": {"n": "01", "en": "In the Zone", "zh": "心流之境", "imgs": ["assets/work/p01.jpg", "assets/work/p02.jpg", "assets/work/p03.jpg", "assets/work/p04.jpg", "assets/work/p05.jpg"], "tags": ["Immersive Experience", "Unity", "C#", "Level Design", "VR", "Body Storming"], "den": "While skiing with my partner I experienced a state of complete, self-forgetting focus — strikingly similar to falling in love. I call it “in the zone” rather than “flow”, to stress its distortion of time and space. Through interviews with 20 extreme-sports enthusiasts, body storming and moodboards, I translated its stages into six Unity levels — floating, tunnels, rolling balls and more — connected by “wormholes”, guiding participants through movement, emotion and perception.", "dzh": "和伴侣滑雪时，我体验到一种高度沉浸、忘我的专注——与恋爱中的感受惊人地相似。我称之为“in the zone”而非“心流”，以强调它对时间与空间的扭曲。通过对 20 位极限运动爱好者的访谈、身体风暴与情绪板，我将这一状态的各个阶段转化为六个 Unity 关卡（漂浮、隧道、滚球等），并以“虫洞”相连，引导参与者在运动、情绪与感知中重新体验“忘我”。", "links": [["Showcase · YouTube", "https://youtu.be/1zl_6Zqlujo"], ["Showcase · Vimeo", "https://vimeo.com/1133417435"], ["Process · YouTube", "https://youtu.be/0w9tn2J0AhU"], ["Process · Vimeo", "https://vimeo.com/1133388405"]]}, "death": {"n": "02", "en": "The Fourth Death", "zh": "第四次死亡", "imgs": ["assets/work/p06.jpg", "assets/work/p07.jpg", "assets/work/p08.jpg", "assets/work/p09.jpg", "assets/work/p10.jpg"], "tags": ["Speculative Design", "Worldview Script", "Digital Animation", "Narrative Design"], "den": "A speculative design investigation into the industrialisation of regret. A fictional company sells the “Chrono-Agent” — a pill promising time reversal — and a crime-scene installation reveals how remorse is commodified. Four scenarios (a casino, the stock market, a cosmetic clinic and an exam hall) show that excessive consumption traps users inside regret itself. Includes an online survey on regret, an industry-chain analysis, the drug and brand system, and an art-narrative film.", "dzh": "一项关于“后悔”被产业化的思辨设计。虚构的公司售卖号称能让时间倒流的“Chrono-Agent”后悔药，并以案发现场式的装置揭示悔恨如何被商品化。赌场、股市、整形诊所与考场四个场景表明：过度消费最终让人困在后悔本身。项目包含关于后悔的线上调研、产业链分析、药物与品牌系统设计，以及一部艺术叙事短片。", "links": [["Film · Vimeo", "https://vimeo.com/1146518482"], ["Film · YouTube", "https://youtu.be/8FwmL-GGwm8"]]}, "gluttony": {"n": "03", "en": "Gluttony Paradise", "zh": "暴食乐园", "imgs": ["assets/work/p11.jpg", "assets/work/p12.jpg", "assets/work/p13.jpg", "assets/work/p14.jpg", "assets/work/p15.jpg"], "tags": ["Critical Game Design", "Unity", "AI Dialogue", "Toon Shading", "Playtesting"], "den": "An immersive game that simulates binge eating, drawn from personal experience. In a candy-coloured town players can eat without limit — until they are caught in the loop of anxiety → eating for relief → binge → repeat, mirroring the capitalist cycle of manufactured desire and brief satisfaction. Features an anxiety meter, AI-driven NPC dialogue, metaphorical food architecture, a shader-based visual shift into the binge state, and playtest-driven reflection.", "dzh": "一款源于个人经历、模拟暴食的沉浸式游戏。玩家在糖果色小镇中可以无限进食，却逐渐陷入“焦虑 → 进食缓解 → 暴食 → 再循环”的陷阱，映射资本主义中“制造欲望—短暂满足—更深焦虑”的循环。包含焦虑值系统、AI 驱动的 NPC 对话、带隐喻的食物建筑、进入暴食状态时的着色器视觉转换，以及基于试玩的反思与迭代。", "links": [["Showcase · Vimeo", "https://vimeo.com/1146351911"], ["Showcase · YouTube", "https://youtu.be/FIKNKOmD068"], ["Process · Vimeo", "https://vimeo.com/1146349151"], ["Process · YouTube", "https://youtu.be/0HQGpsshzZk"]]}, "protagonist": {"n": "04", "en": "Be Protagonist", "zh": "成为主角", "imgs": ["assets/work/p16.jpg", "assets/work/p17.jpg", "assets/work/p18.jpg", "assets/work/p19.jpg"], "tags": ["Interactive Installation", "TouchDesigner", "Gesture Interaction", "Facial Tracking", "Gemini API", "3D Printing"], "den": "An interactive installation responding to the “NPC mentality” and loss of self-worth among young people. Framed as a character-creation screen in the game “Earth Online”, participants use gestures to design a personal facial armour on a large screen. A Gemini-powered pipeline then turns their capture into a 3D model, and they leave with a 3D-printed protagonist ID card carrying a personal quest.", "dzh": "回应年轻人中流行的“NPC 心态”与自我价值感缺失的交互装置。作品以网络梗“地球 Online”的角色创建界面为框架，参与者在大屏前用手势设计属于自己的“面甲”；随后由基于 Gemini 的程序把截图转换为 3D 模型，参与者最终带走一张印有个人任务的 3D 打印主角身份卡。", "links": [["Exhibition · YouTube", "https://youtu.be/z7EUHCh-lFI"], ["Exhibition · Vimeo", "https://vimeo.com/1146352328"]]}}, "more": {"sheep": {"more": 1, "en": "Letter of the Flying Sheep", "zh": "", "kind": ["Web game · Birthday gift", "网页游戏 · 生日礼物"], "tags": ["Web Game", "Narrative", "Personal"], "den": "A small browser game I made as a birthday present for my mom. Her name sounds like “flying sheep”, so the hero is a little sheep with wings. The five levels follow her life in order, from Shenzhen Middle School to Shenzhen University to Nanshan Science Park, and each scene is drawn from the real place. Ping-pong bats, a drawing board, and the cat and pigeons she once kept all appear along the way, in her favourite purple. The journey ends with a birthday letter.", "dzh": "这是我送给妈妈的生日礼物，一个小小的网页游戏。妈妈名字的谐音很像“flying sheep”，所以主角是一只会飞的小羊。五个关卡按她的成长顺序设计，从深中、深大到南山科技园，每个场景都参考了这些地方的样子；乒乓球、画板，还有她以前养过的猫和鸽子都藏在游戏里，整体用了她最喜欢的紫色。旅程的终点是一封生日信。", "imgs": ["assets/more/sheep-1.jpg", "assets/more/sheep-2.jpg", "assets/more/sheep-3.jpg", "assets/more/sheep-4.jpg", "assets/more/sheep-5.jpg", "assets/more/sheep-6.jpg"], "links": [["Play in browser", "#play-sheep", "▶"]], "badge": ["♡ For Mom", "♡ 献给妈妈"]}, "zero": {"more": 1, "en": "零时之塔", "zh": "", "kind": ["Team · TapTap Spotlight Jam 2026", "团队 · TapTap 聚光灯 Game Jam 2026"], "tags": ["Unreal Engine", "Card Combat", "Game Jam", "Team of 11"], "den": "A 21-day entry for the TapTap Spotlight Game Jam 2026, made by an 11-person team (For Dawn Studio) in Unreal Engine. Time has become unstable and different eras of the same place now overlap. Players are a witch who can interfere with time, fighting through floors that show the same place in different periods with a hand of skill cards. Released as a playable demo on TapTap.", "dzh": "TapTap 聚光灯 2026 年 21 天游戏创作挑战参赛作品，由 11 人团队（For Dawn Studio）使用虚幻引擎制作。世界的时间变得不再稳定，同一地点的不同时代重叠在一起。玩家扮演能干涉时间的魔女，用手中的技能卡牌，在“同一地点、不同时期”的楼层中一路向前。试玩 Demo 已在 TapTap 上线。", "imgs": ["assets/more/zero-1.jpg", "assets/more/zero-2.jpg", "assets/more/zero-3.jpg", "assets/more/zero-4.jpg", "assets/more/zero-5.jpg"], "links": [["TapTap", "https://www.taptap.cn/app/977535", "↗"]], "badge": null}, "who": {"more": 1, "en": "Who Am I?", "zh": "", "kind": ["Team · MA Games Design, LCC", "团队 · 伦敦传媒学院游戏设计硕士"], "tags": ["Environmental Narrative", "3D", "Team of 4", "Playtested ×3", "CN / EN / IT"], "den": "An environmental narrative game we made as a team of four for the Designing and Prototyping unit of the MA Games Design at LCC. You start as a baby animal with no idea what you are, and work it out from the world around you: tracks in the mud, gnawed stumps and a dam. Then you choose which of four grown-ups is your family. We ran three rounds of playtesting: v0.4 within the team, v0.6 in class and v0.7.4 with 23 players. The findings led us to add hints such as glows, light beams and golden light, and the latest round raised the opposite question: whether those hints now speak louder than the environment. One playthrough takes about five minutes, mostly with one button, in Chinese, English or Italian.", "dzh": "伦敦传媒学院（LCC）游戏设计硕士“设计与原型”课程的团队作品，一款 4 人合作完成的环境叙事游戏。玩家是一只不知道自己是什么的小动物，只能从环境中寻找答案：泥地上的脚印、被啃断的树桩和水坝；最后在四只成年动物中，选出哪一只是自己的家人。我们一共进行了三轮试玩测试：v0.4 团队内部、v0.6 课堂试玩、v0.7.4 共 23 位玩家。根据测试结果，我们加入了发光、光束、金色光线等提示；而最新一轮又提出了相反的问题：这些提示是否已经盖过了环境本身的表达。一次游玩约 5 分钟，基本只用一个按键，支持中文、英文和意大利语。", "imgs": ["assets/more/who-1.jpg", "assets/more/who-2.jpg", "assets/more/who-3.jpg", "assets/more/who-4.jpg", "assets/more/who-5.jpg", "assets/more/who-6.jpg", "assets/more/who-7.jpg", "assets/more/who-8.jpg"], "links": [["Watch intro video", "#watch", "▶"], ["Download for Mac", "#dl-mac", "↓"], ["Download for Windows", "#dl-win", "↓"]], "badge": null, "video": "assets/video/whoami-intro.mp4", "poster": "assets/more/who-cover.jpg", "note": ["Mac: the app is not notarised. If macOS blocks it the first time, go to System Settings › Privacy & Security and click “Open Anyway”. Controls: WASD to move, mouse to look, E to act.", "Mac：应用未经公证，首次打开若被拦截，请到 系统设置 › 隐私与安全性 点击“仍要打开”。操作：WASD 移动，鼠标转视角，E 互动。"]}, "oms": {"more": 1, "en": "One More Second", "zh": "", "kind": ["Team · GMTK Game Jam 2026", "团队 · GMTK Game Jam 2026"], "tags": ["Unity", "Puzzle", "Game Jam", "Team of 8"], "den": "Our GMTK Game Jam 2026 entry, made by a team of eight in Unity. A fire breaks out in a shopping mall. As a firefighter carrying magic pocket watches, you drag the watches onto objects to change their time, solve each room’s puzzle and save as many people as you can before your own countdown runs out. The images here are the cover, character art, the time-ability icons (rewind, slow down, speed up) and the floor backgrounds, taken from the game build.", "dzh": "GMTK Game Jam 2026 参赛作品，8 人团队用 Unity 完成。商场突发火灾，玩家扮演带着魔法怀表的消防员：把怀表拖到物体上改变它们的时间，解开每个房间的谜题，在自己的倒计时结束前救出尽可能多的人。下方图片包括封面、角色立绘、时间能力图标（倒流、减速、加速）以及各楼层场景背景，均取自游戏文件。", "imgs": ["assets/more/oms-1.jpg", "assets/more/oms-2.jpg", "assets/more/oms-3.jpg", "assets/more/oms-4.jpg", "assets/more/oms-5.jpg", "assets/more/oms-6.jpg", "assets/more/oms-7.jpg", "assets/more/oms-8.jpg"], "links": [["Play on itch.io", "https://morton-mao.itch.io/one-more-second", "↗"]], "badge": null}, "gold": {"more": 1, "en": "Hoooook", "zh": "", "kind": ["On Steam · Gold-miner × Roguelite", "已上架 Steam · 黄金矿工 × 肉鸽"], "tags": ["Roguelite", "Gold-miner", "Build Design", "Steam"], "den": "Hoooook is on Steam: a gold-miner game crossed with a roguelite. You swing a mechanical claw to grab gold, gems and items, upgrade the hand across five stats (speed, size, rotation, strength and reach), and dig deeper through themed layers such as mines, swamps and graveyards. The current build system is deep but hard to read, which makes the game harder to pick up. My next step is to split builds across characters: each character gets one clear leaning and becomes the physical rig that replaces the mine cart, chosen at the start of a run. The demo uses a single default character built around a combo build.", "dzh": "Hoooook 已上架 Steam，是“黄金矿工 + 肉鸽”的体验。玩家甩动机械爪抓取金矿、宝石和道具，从速度、尺寸、旋转、力量、抓取距离五个维度升级机械手，在矿洞、沼泽、墓地等不同主题的地层中向下挖掘。目前的流派设计很硬核、也比较隐晦，上手存在门槛；接下来我计划把流派拆分到具体角色上：每个角色有一个明确的倾向，角色具象化后就是取代矿车的那个实体，在开局时选择。目前的 Demo 相当于默认一个角色，主打连击流派。", "imgs": ["assets/more/gold-1.jpg", "assets/more/gold-2.jpg", "assets/more/gold-3.jpg", "assets/more/gold-4.jpg", "assets/more/gold-5.jpg"], "links": [], "badge": ["On Steam", "已上架 Steam"]}, "dream": {"more": 1, "en": "梦我", "zh": "", "kind": ["Team lead · 2D platformer", "团队组长 · 2D 平台跳跃"], "tags": ["Unity", "Team Lead", "Game Design", "Programming", "50-player Playtest"], "den": "A team project where I was team lead, responsible for game design and programming. It is a 2D platformer about self-discovery, grounded in Freud’s dream theory and personality structure and in Self-Determination Theory. Three acts map to combat (facing raw desire), platforming (finding balance in the real world) and puzzle mechanics (rethinking social norms). We playtested with 50 players and used their ratings and comments to tune difficulty.", "dzh": "团队项目，我担任组长，负责游戏策划与程序实现。这是一款关于自我探索的 2D 平台跳跃游戏，理论基础来自弗洛伊德的梦的解析、人格结构理论以及自我决定理论（SDT）。三个阶段分别对应战斗（面对原始冲动与欲望）、平台跳跃（在现实中寻找平衡）和机制解谜（对社会规范的反思与超越）。我们邀请 50 位玩家试玩，并根据评分与反馈调整难度。", "imgs": ["assets/more/dream-07.jpg", "assets/more/dream-08.jpg", "assets/more/dream-09.jpg", "assets/more/dream-10.jpg"], "links": [], "badge": null}, "xianjie": {"more": 1, "en": "仙界逍遥录", "zh": "", "kind": ["Solo · Roguelite", "个人项目 · 肉鸽"], "tags": ["Unity", "C#", "Roguelite", "Pacing Design"], "den": "A solo survivor-style roguelite set in a xianxia world. Building on the Vampire Survivors formula, I designed a pacing controller that reads the player’s state and cycles enemy spawns through build-up, peak and cool-down phases, so tension rises and falls in a designed rhythm instead of only growing.", "dzh": "一款仙侠题材的个人幸存者类肉鸽游戏。在《吸血鬼幸存者》玩法的基础上，我设计了“游戏节奏控制器”：根据玩家当前状态，让敌人生成在铺垫、高峰与冷却三个阶段之间循环，使紧张感按设计好的节奏起伏，而不只是一味递增。", "imgs": ["assets/more/xianjie-01.jpg", "assets/more/xianjie-02.jpg", "assets/more/xianjie-03.jpg"], "links": [], "badge": null}, "oasis": {"more": 1, "en": "Oasis", "zh": "", "kind": ["Solo · City-building sim", "个人项目 · 模拟经营"], "tags": ["Unity", "Simulation", "Serious Game"], "den": "A solo city-building and management sim about the gap between caring for the environment and actually acting on it. Players plan a city that has to balance growth, residents’ happiness and ecological health; each building and event shows the long-term cost of a choice, aiming to turn awareness into action for younger players.", "dzh": "一款个人制作的城市建设与模拟经营游戏，关注“有环保意识却难以付诸行动”的问题。玩家需要在城市发展、居民幸福感与生态健康之间取得平衡；每一座建筑和每一次事件都会呈现选择的长期代价，希望帮助年轻玩家把环保意识转化为行动。", "imgs": ["assets/more/oasis-04.jpg", "assets/more/oasis-05.jpg", "assets/more/oasis-06.jpg"], "links": [], "badge": null}, "prompt": {"more": 1, "en": "Daily Prompt Helper", "zh": "", "kind": ["UX study · Non-game", "UX 练习 · 非游戏"], "tags": ["UX Research", "UI Design", "Usability Testing"], "den": "My one non-game project, a UX practice piece where I did the research and the UI. It is a tool that helps Midjourney users write accurate prompts. From desk research and user interviews I designed a structured prompt builder (subject, style, camera, parameters), explanations for jargon, one-click translation and image-to-text. Usability tests led to changes such as moving the builder into a floating panel inside the gallery.", "dzh": "唯一一个和游戏无关的作品，是一次 UX 练习，我负责用户研究与 UI 设计。这是一个帮助 Midjourney 用户写出准确提示词的工具。基于桌面调研与用户访谈，我设计了结构化的提示词构建器（主体、风格、镜头、参数）、术语解释、一键翻译和图生文功能；可用性测试后，又把构建器改为画廊内的悬浮面板等。", "imgs": ["assets/more/prompt-0.jpg", "assets/more/prompt-1.jpg", "assets/more/prompt-2.jpg", "assets/more/prompt-3.jpg", "assets/more/prompt-4.jpg", "assets/more/prompt-5.jpg", "assets/more/prompt-6.jpg", "assets/more/prompt-7.jpg"], "links": [], "badge": null}}};
@@ -435,6 +495,39 @@ const $ = s => document.querySelector(s);
 const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const wait = ms => new Promise(r => setTimeout(r, reduce ? 0 : ms));
 
+/* ---------- 4-tone dithering (Game Boy style, black-gold palette) ---------- */
+const DCACHE = {};
+const BAYER = [0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5];
+const PAL = [[17,16,13],[88,79,66],[185,168,143],[239,228,206]];
+function dither(src, w, h) {
+  const key = src + '@' + w + 'x' + h;
+  if (DCACHE[key]) return Promise.resolve(DCACHE[key]);
+  return new Promise(res => {
+    const im = new Image();
+    im.onload = () => {
+      try {
+        const c = document.createElement('canvas'); c.width = w; c.height = h;
+        const x = c.getContext('2d'), s = Math.max(w / im.width, h / im.height), dw = im.width * s, dh = im.height * s;
+        x.drawImage(im, (w - dw) / 2, (h - dh) / 2, dw, dh);
+        const d = x.getImageData(0, 0, w, h), a = d.data;
+        for (let i = 0; i < w * h; i++) {
+          const o = i * 4, px = i % w, py = (i / w) | 0;
+          let l = (a[o] * .299 + a[o + 1] * .587 + a[o + 2] * .114) / 255;
+          l = Math.min(1, Math.max(0, (l - .06) * 1.18));
+          const t = (BAYER[(py % 4) * 4 + px % 4] + .5) / 16 - .5;
+          const q = Math.max(0, Math.min(3, Math.round(l * 3 + t * .95))), c2 = PAL[q];
+          a[o] = c2[0]; a[o + 1] = c2[1]; a[o + 2] = c2[2];
+        }
+        x.putImageData(d, 0, 0);
+        res(DCACHE[key] = c.toDataURL());
+      } catch (e) { res(src); }
+    };
+    im.onerror = () => res(src);
+    im.src = src;
+  });
+}
+function fillDither(root) { root.querySelectorAll('img[data-dither]').forEach(img => { const [w, h] = img.dataset.size.split('x').map(Number); dither(img.dataset.dither, w, h).then(u => { if (img.isConnected) { img.src = u; img.classList.add('ok'); } }); }); }
+
 /* ---------- language ---------- */
 let lang = 'en';
 try { lang = localStorage.getItem('ywp-lang') || ((navigator.language || '').startsWith('zh') ? 'zh' : 'en'); } catch (e) {}
@@ -445,6 +538,7 @@ function applyLang() {
   $('#langBtn').textContent = lang === 'zh' ? 'EN' : '中文';
   syncSoundBtn();
   renderQuick();
+  if (typeof paintSeen === 'function') { try { paintSeen(); } catch (e) {} }
   render();
 }
 $('#langBtn').onclick = () => { lang = lang === 'zh' ? 'en' : 'zh'; try { localStorage.setItem('ywp-lang', lang); } catch (e) {} applyLang(); };
@@ -519,13 +613,15 @@ function render() {
   if (state === 'menu') {
     scr.innerHTML = `<h3><span>${T('MAIN MENU', '主菜单')}</span><span>P1</span></h3><ul class="list">${MENU.map((m, i) => `<li><button class="item${i === cursor ? ' sel' : ''}" data-i="${i}">${T(m.en, m.zh)}<small>${T(...m.note)}</small></button></li>`).join('')}</ul><div class="foot"><span>A ${T('OK', '确认')}</span><span>SELECT ${T('QUICK VIEW', '速览')}</span></div>`;
   } else if (state === 'mainlist') {
-    scr.innerHTML = `<h3><span>${T('MAIN QUESTS', '主线任务')}</span><span>${cursor + 1}/4</span></h3><ul class="list">${MAIN_KEYS.map((k, i) => `<li><button class="item${i === cursor ? ' sel' : ''}" data-i="${i}">0${i + 1} ${esc(ALL[k].en)}</button></li>`).join('')}</ul><div class="foot"><span>A ${T('INSERT', '插入')}</span><span>B ${T('BACK', '返回')}</span></div>`;
+    scr.classList.add('split');
+    scr.innerHTML = `<h3><span>${T('MAIN QUESTS', '主线任务')}</span><span>${cursor + 1}/4</span></h3><ul class="list">${MAIN_KEYS.map((k, i) => `<li><button class="item${i === cursor ? ' sel' : ''}" data-i="${i}">0${i + 1} ${esc(ALL[k].en)}</button></li>`).join('')}</ul><div class="pv"><img data-dither="${COVER(MAIN_KEYS[cursor])}" data-size="72x100" alt=""></div><div class="foot"><span>A ${T('INSERT', '插入')}</span><span>B ${T('BACK', '返回')}</span></div>`;
   } else if (state === 'title') {
     const P = ALL[inserted], i = MAIN_KEYS.indexOf(inserted);
     scr.classList.add('title-card');
-    scr.innerHTML = `<div class="tc-img"><img src="${COVER(inserted)}" alt=""></div><div class="tc-body"><span class="tc-k">QUEST 0${i + 1} · ${T(...KIND_MAIN[inserted])}</span><span class="tc-t">${esc(P.en)}</span><span class="tc-k">${esc(P.zh)}</span><div class="foot"><span class="press">▶ A ${T('START', '开始')}</span><span>B ${T('EJECT', '退出')}</span></div></div>`;
+    scr.innerHTML = `<div class="tc-img"><img data-dither="${COVER(inserted)}" data-size="160x72" alt=""></div><div class="tc-body"><span class="tc-k">QUEST 0${i + 1} · ${T(...KIND_MAIN[inserted])}</span><span class="tc-t">${esc(P.en)}</span><span class="tc-k">${esc(P.zh)}</span><div class="foot"><span class="press">▶ A ${T('START', '开始')}</span><span>B ${T('EJECT', '退出')}</span></div></div>`;
   } else if (state === 'side') {
-    scr.innerHTML = `<h3><span>${T('SIDE QUESTS', '支线任务')}</span><span>${cursor + 1}/9</span></h3><ul class="list">${MORE_KEYS.map((k, i) => `<li><button class="item${i === cursor ? ' sel' : ''}" data-i="${i}">${esc(ALL[k].en)}</button></li>`).join('')}</ul><div class="foot"><span>A ${T('GRAB', '抓取')} →</span><span>B ${T('BACK', '返回')}</span></div>`;
+    scr.classList.add('split');
+    scr.innerHTML = `<h3><span>${T('SIDE QUESTS', '支线任务')}</span><span>${cursor + 1}/9</span></h3><ul class="list">${MORE_KEYS.map((k, i) => `<li><button class="item${i === cursor ? ' sel' : ''}" data-i="${i}">${esc(ALL[k].en)}</button></li>`).join('')}</ul><div class="pv"><img data-dither="${COVER(MORE_KEYS[cursor])}" data-size="72x100" alt=""></div><div class="foot"><span>A ${T('GRAB', '抓取')} →</span><span>B ${T('BACK', '返回')}</span></div>`;
   } else if (state === 'save') {
     scr.innerHTML = `<h3><span>${T('SAVE FILE 01', '存档 01')}</span><span>♥♥♥</span></h3>
       <dl class="stat">
@@ -552,6 +648,7 @@ function render() {
   }
   scr.querySelectorAll('.item').forEach(b => b.addEventListener('click', () => { cursor = +b.dataset.i; press('a', true); }));
   keepInList(scr.querySelector('.item.sel, .ach.sel'));
+  fillDither(scr);
 }
 
 function keepInList(el) { if (!el) return; const box = el.closest('.list'); if (!box) return; const t = el.offsetTop - box.offsetTop, b = t + el.offsetHeight; if (t < box.scrollTop) box.scrollTop = t; else if (b > box.scrollTop + box.clientHeight) box.scrollTop = b - box.clientHeight; }
@@ -581,7 +678,7 @@ function press(k, fromTouch) {
       sfx.ok(); const id = MENU[cursor].id;
       if (id === 'main') setState('mainlist'); else if (id === 'side') { setState('side', clawIdx); aimClaw(clawIdx); } else setState(id);
     } else if (state === 'mainlist') insertCart(MAIN_KEYS[cursor]);
-    else if (state === 'title') { sfx.ok(); openManual(inserted); }
+    else if (state === 'title') { sfx.ok(); const [x, y] = centerOf($('#screen')); irisOpen(inserted, x, y); }
     else if (state === 'side') grab(cursor);
     else if (state === 'credits') {
       const act = ['mail', 'cv', 'site', 'menu'][cursor]; sfx.ok();
@@ -632,6 +729,7 @@ function buildCaps() {
   caps = MORE_KEYS.map((k, i) => {
     const el = document.createElement('button');
     el.className = 'cap'; el.dataset.i = i; el.setAttribute('aria-label', ALL[k].en);
+    el.style.setProperty('--tint', ['rgba(226,214,194,.58)', 'rgba(176,138,96,.6)', 'rgba(132,122,108,.55)', 'rgba(242,234,218,.62)', 'rgba(160,112,86,.55)'][i % 5]);
     el.innerHTML = `<span class="shell"></span><span class="win"><img src="${COVER(k)}" alt="" loading="lazy"></span><span class="shine"></span>`;
     el.addEventListener('click', () => { if (busy) return; cursor = i; if (state !== 'side') setState('side', i); else render(); aimClaw(i); setTimeout(() => grab(i), 40); });
     el.addEventListener('mouseenter', () => showTip(i)); el.addEventListener('mouseleave', hideTip);
@@ -654,14 +752,15 @@ async function grab(i) {
   setCarriage(x); sfx.whir(); await wait(620);
   head.classList.add('open'); setCable(Math.max(20, y - 12 - 62)); await wait(760);
   head.classList.remove('open'); sfx.move(); await wait(260);
-  setCable(40); c.el.style.top = (12 + 40 + 30 + 22) + 'px'; c.el.style.zIndex = 7; await wait(760);
+  setCable(40); c.el.classList.add('held'); c.el.style.top = (12 + 40 + 30 + 22) + 'px'; c.el.style.zIndex = 7; await wait(760);
   const chuteX = 8 + 35; setCarriage(chuteX); c.el.style.left = chuteX + 'px'; sfx.whir(); await wait(660);
   head.classList.add('open'); c.el.style.top = ($('#glass').clientHeight + 40) + 'px'; await wait(420);
-  head.classList.remove('open'); sfx.prize();
-  busy = false; openManual(c.k, () => respawn(i));
+  head.classList.remove('open');
+  const [cx, cy] = centerOf(document.querySelector('.chute')); sparkle(cx, cy - 20);
+  busy = false; irisOpen(c.k, cx, cy, () => respawn(i));
 }
 function respawn(i) {
-  const c = caps[i]; c.el.style.transition = 'none'; c.el.classList.add('gone');
+  const c = caps[i]; c.el.style.transition = 'none'; c.el.classList.add('gone'); c.el.classList.remove('held');
   const [x, y] = homeXY(i); c.el.style.left = x + 'px'; c.el.style.top = (y - 60) + 'px'; c.el.style.zIndex = 3;
   void c.el.offsetWidth; setTimeout(() => { c.el.style.transition = ''; c.el.classList.remove('gone'); c.el.style.top = y + 'px'; }, 30);
 }
@@ -670,12 +769,58 @@ $('#clawR').onclick = () => { if (state !== 'side') setState('side', clawIdx); p
 $('#grabBtn').onclick = () => { if (state !== 'side') { setState('side', clawIdx); } grab(cursor = clawIdx); };
 addEventListener('resize', () => { if (!busy) { layoutCaps(); setCarriage(homeXY(clawIdx)[0]); } });
 
+/* ---------- iris transition + sparks ---------- */
+async function irisOpen(k, x, y, onClose) {
+  if (reduce) { openManual(k, onClose); return; }
+  const ir = $('#iris'); ir.style.setProperty('--ix', x + 'px'); ir.style.setProperty('--iy', y + 'px');
+  ir.hidden = false; void ir.offsetWidth; ir.classList.add('open'); tone(196, .5, 'triangle', .03, 2.5);
+  await wait(580); openManual(k, onClose); await wait(380);
+  ir.classList.remove('open'); ir.hidden = true;
+}
+function sparkle(x, y, n = 14) {
+  if (reduce) return;
+  for (let i = 0; i < n; i++) {
+    const s = document.createElement('i'), a = Math.random() * Math.PI * 2, d = 40 + Math.random() * 70;
+    s.className = 'spark'; s.style.left = x + 'px'; s.style.top = y + 'px';
+    s.style.setProperty('--dx', Math.cos(a) * d + 'px'); s.style.setProperty('--dy', (Math.sin(a) * d - 30) + 'px');
+    document.body.appendChild(s); setTimeout(() => s.remove(), 800);
+  }
+}
+const centerOf = el => { const r = el.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; };
+
+/* ---------- exploration: quest log + achievements ---------- */
+let seen = new Set();
+try { seen = new Set(JSON.parse(localStorage.getItem('ywp-seen') || '[]')); } catch (e) {}
+const TOTAL = MAIN_KEYS.length + MORE_KEYS.length;
+function paintSeen() {
+  $('#questBtn').textContent = T('QUEST LOG ', '探索进度 ') + seen.size + '/' + TOTAL;
+  document.querySelectorAll('.cart').forEach(c => c.classList.toggle('seen', seen.has(c.dataset.cart)));
+  caps.forEach(c => c.el.classList.toggle('seen', seen.has(c.k)));
+  document.querySelectorAll('.q-card').forEach(c => c.classList.toggle('seen', seen.has(c.dataset.k)));
+}
+let achvT;
+function achievement(kicker, title, sub) {
+  const a = $('#achv'); $('#achvK').textContent = kicker; $('#achvT').textContent = title; $('#achvS').textContent = sub;
+  a.classList.add('show'); clearTimeout(achvT); achvT = setTimeout(() => a.classList.remove('show'), 3000);
+}
+function markSeen(k) {
+  if (seen.has(k)) return;
+  seen.add(k); try { localStorage.setItem('ywp-seen', JSON.stringify([...seen])); } catch (e) {}
+  paintSeen();
+  setTimeout(() => {
+    sfx.prize();
+    if (seen.size === TOTAL) { document.body.classList.add('gold'); achievement(T('100% COMPLETE', '全部完成'), T('Completionist', '全收集达成'), T('Gold Edition console unlocked', '解锁：黄金限定版掌机')); }
+    else achievement(T('ACHIEVEMENT UNLOCKED', '解锁成就'), T('Explorer ', '探索者 ') + seen.size + '/' + TOTAL, ALL[k].en);
+  }, 700);
+}
+$('#questBtn').onclick = () => { sfx.ok(); openQuick(); };
+
 /* ---------- manual (project detail) ---------- */
 let mKey = null, mOnClose = null, lastFocus = null;
 function group(k) { return MAIN_KEYS.includes(k) ? MAIN_KEYS : MORE_KEYS; }
 function openManual(k, onClose) {
   const P = ALL[k], isMain = MAIN_KEYS.includes(k), m = $('#manual');
-  mKey = k; if (onClose !== undefined) mOnClose = onClose;
+  mKey = k; if (onClose !== undefined) mOnClose = onClose; markSeen(k);
   $('#mCover').src = COVER(k);
   $('#mNum').textContent = isMain ? 'MAIN QUEST 0' + (MAIN_KEYS.indexOf(k) + 1) : 'SIDE QUEST';
   $('#mKind').textContent = isMain ? T(...KIND_MAIN[k]) : T(P.kind[0], P.kind[1]);
@@ -721,7 +866,7 @@ $('#vClose').onclick = closeViewer;
 
 /* ---------- quick view ---------- */
 function card(k) { const P = ALL[k]; return `<button class="q-card" data-k="${k}"><img src="${COVER(k)}" alt="" loading="lazy"><div><span>${esc(MAIN_KEYS.includes(k) ? T(...KIND_MAIN[k]) : T(P.kind[0], P.kind[1]))}</span><b>${esc(P.en)}</b></div></button>`; }
-function renderQuick() { $('#qMain').innerHTML = MAIN_KEYS.map(card).join(''); $('#qMore').innerHTML = MORE_KEYS.map(card).join(''); }
+function renderQuick() { $('#qMain').innerHTML = MAIN_KEYS.map(card).join(''); $('#qMore').innerHTML = MORE_KEYS.map(card).join(''); if (typeof paintSeen === 'function' && caps) paintSeen(); }
 function openQuick() { $('#quick').hidden = false; document.body.style.overflow = 'hidden'; $('#qClose').focus(); }
 function closeQuick() { $('#quick').hidden = true; if ($('#manual').hidden) document.body.style.overflow = ''; }
 $('#quickBtn').onclick = openQuick; $('#qClose').onclick = closeQuick;
@@ -747,8 +892,46 @@ addEventListener('keydown', e => {
 });
 let tt; function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(tt); tt = setTimeout(() => t.classList.remove('show'), 2200); }
 
+/* ---------- ambient dust in the spotlights ---------- */
+(function dust() {
+  const cv = $('#dust'), cx = cv.getContext('2d'); let W, H, dpr, cols = [], P = [];
+  function size() {
+    dpr = Math.min(devicePixelRatio || 1, 2); W = innerWidth; H = innerHeight; cv.width = W * dpr; cv.height = H * dpr; cv.style.width = W + 'px'; cv.style.height = H + 'px';
+    cols = [...document.querySelectorAll('.lit')].map(el => { const r = el.getBoundingClientRect(); return [r.left + r.width / 2, Math.max(120, r.width * .6)]; });
+  }
+  size(); addEventListener('resize', size);
+  for (let i = 0; i < 80; i++) P.push({x: Math.random() * W, y: Math.random() * H, r: .4 + Math.random() * 1.4, vy: .08 + Math.random() * .25, ph: Math.random() * 6.3});
+  let t = 0;
+  function frame() {
+    t += .016; cx.setTransform(dpr, 0, 0, dpr, 0, 0); cx.clearRect(0, 0, W, H);
+    for (const p of P) {
+      if (!reduce) { p.y -= p.vy; p.x += Math.sin(t * .6 + p.ph) * .15; if (p.y < -10) { p.y = H + 10; p.x = Math.random() * W; } }
+      let lit = .15; for (const [c, w] of cols) lit = Math.max(lit, 1 - Math.abs(p.x - c) / w);
+      const a = (.12 + .5 * lit) * (.55 + .45 * Math.sin(t * 1.4 + p.ph));
+      cx.fillStyle = `rgba(243,224,190,${a.toFixed(3)})`; cx.beginPath(); cx.arc(p.x, p.y, p.r, 0, 7); cx.fill();
+    }
+    if (!reduce && !document.hidden) requestAnimationFrame(frame); else if (!reduce) setTimeout(frame, 400);
+  }
+  frame();
+})();
+
+/* ---------- hold-it-in-your-hands tilt ---------- */
+if (!reduce && matchMedia('(hover: hover) and (pointer: fine)').matches) {
+  const con = $('#console'), cab = $('#cabinet'), rack = $('#carts'), spec = $('#spec');
+  let tx = 0, ty = 0, cx = 0, cy = 0, run = false;
+  addEventListener('pointermove', e => { tx = e.clientX / innerWidth - .5; ty = e.clientY / innerHeight - .5; if (!run) { run = true; requestAnimationFrame(step); } });
+  function step() {
+    cx += (tx - cx) * .08; cy += (ty - cy) * .08;
+    con.style.transform = `perspective(1400px) rotateY(${(cx * 12).toFixed(2)}deg) rotateX(${(-cy * 9).toFixed(2)}deg)`;
+    cab.style.transform = `perspective(1400px) rotateY(${(cx * 7).toFixed(2)}deg) rotateX(${(-cy * 5).toFixed(2)}deg)`;
+    rack.style.transform = `perspective(1400px) rotateY(${(cx * 7).toFixed(2)}deg) rotateX(${(-cy * 5).toFixed(2)}deg)`;
+    spec.style.setProperty('--sx', (50 - cx * 120).toFixed(1) + '%'); spec.style.setProperty('--sy', (30 - cy * 90).toFixed(1) + '%');
+    if (Math.abs(tx - cx) + Math.abs(ty - cy) > .001) requestAnimationFrame(step); else run = false;
+  }
+}
+
 /* ---------- boot ---------- */
-buildCarts(); buildCaps(); applyLang(); setCarriage(homeXY(clawIdx)[0]);
+buildCarts(); buildCaps(); applyLang(); paintSeen(); setCarriage(homeXY(clawIdx)[0]);
 setTimeout(() => { if (state === 'boot') { $('#led').classList.add('on'); setState('menu'); } }, reduce ? 0 : 3200);
 </script>
 </body>
