@@ -53,7 +53,7 @@ img{display:block;max-width:100%}
 .zone-label::before{content:"";width:18px;height:1px;background:var(--gold)}
 
 /* ---------- cartridge rack ---------- */
-.rack{justify-self:end;width:min(100%,340px)}
+.rack{justify-self:end;width:min(100%,360px)}
 .carts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
 .cart{position:relative;aspect-ratio:.84;border-radius:7px 0 7px 7px;padding:22px 10px 12px;text-align:left;
   background:linear-gradient(165deg,#2c2824,#1a1714 70%);box-shadow:inset 0 1px 0 rgba(255,255,255,.07),inset 0 0 0 1px rgba(226,214,194,.06),0 14px 26px rgba(0,0,0,.45);
@@ -73,7 +73,7 @@ img{display:block;max-width:100%}
 
 /* ---------- console ---------- */
 .console-wrap{position:relative;padding-top:64px}
-.console{position:relative;width:clamp(300px,27vw,372px);border-radius:22px 22px 78px 22px;padding:26px 24px 30px;
+.console{position:relative;width:clamp(310px,28vw,396px);border-radius:22px 22px 78px 22px;padding:26px 24px 30px;
   background:linear-gradient(158deg,#2a2622 0%,#191714 46%,#100f0d 100%);
   box-shadow:inset 0 2px 0 rgba(255,255,255,.07),inset 0 0 0 1px rgba(226,214,194,.07),inset -10px -14px 30px rgba(0,0,0,.45),0 50px 90px rgba(0,0,0,.65),0 0 0 1px #050404;transition:background .8s}
 .console::before{content:"";position:absolute;left:18px;right:18px;top:12px;height:1px;background:linear-gradient(90deg,transparent,rgba(226,214,194,.18),transparent)}
@@ -393,6 +393,53 @@ body.intro .bigtype,body.intro .floor{opacity:0}
 .m-sec{display:flex;justify-content:space-between;align-items:baseline;margin:30px 0 14px;font-family:var(--chip);font-size:10px;letter-spacing:.18em;color:var(--gold)}
 .m-sec i{font-style:normal;color:var(--dim)}
 
+
+/* ---------- UX pass: legible carts, prompts, cues, drag, coach ---------- */
+.cart-label{display:flex;flex-direction:column}
+.cart-label::after{display:none}
+.cart-art{position:relative;flex:1;min-height:0;overflow:hidden}
+.cart-art::after{content:"";position:absolute;inset:0;box-shadow:inset 0 -18px 18px -14px rgba(0,0,0,.6)}
+.cart-strip{display:block;padding:7px 9px 8px;background:linear-gradient(#f0e7d6,#d8cab0);color:#1b1612;border-top:1px solid #8a7a62}
+.cart-strip b{display:block;font-family:var(--sans);font-weight:600;font-size:13px;line-height:1.15;letter-spacing:-.01em}
+.cart-strip em{display:block;margin-top:3px;font-style:normal;font-family:var(--chip);font-size:7.5px;letter-spacing:.06em;color:#6a5a45;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cart-foot b{font-weight:400;color:var(--gold)}
+.cart:hover .cart-foot b,.cart.hl .cart-foot b{color:var(--gold-hi)}
+.zone-head{display:flex;gap:12px;align-items:flex-start;margin-bottom:16px}
+.zone-n{font-family:var(--serif);font-style:italic;font-weight:600;font-size:38px;line-height:.85;color:var(--gold-hi)}
+.zone-head .zone-label{margin-bottom:4px}
+.zone-head .zone-label::before{display:none}
+.zone-head p{font-size:13px;line-height:1.45;color:var(--muted);max-width:30ch}
+.prompts{display:flex;flex-wrap:wrap;justify-content:center;gap:8px 14px;margin-top:24px;max-width:420px;margin-left:auto;margin-right:auto}
+.pr{display:inline-flex;align-items:center;gap:7px;font-family:var(--chip);font-size:10px;letter-spacing:.08em;color:var(--ink);padding:4px 8px 4px 4px;border-radius:999px;transition:background .2s}
+.pr:hover{background:rgba(226,214,194,.08)}
+.kc{display:inline-grid;place-items:center;min-width:22px;height:22px;padding:0 5px;border-radius:5px;font-style:normal;font-size:9px;background:linear-gradient(#2c2824,#151311);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 2px 0 #050404;color:var(--gold-hi)}
+.kc+.kc{margin-left:-3px}
+.kc.round{border-radius:50%;width:22px;padding:0;background:radial-gradient(circle at 35% 30%,#efe3cc,#b9a88f 55%,#7d6f5b);color:#2a241d}
+.keys-note{flex-basis:100%;text-align:center;font-family:var(--chip);font-size:8px;letter-spacing:.12em;color:var(--dim)}
+.ab button.cue{animation:cueA 1.3s ease-in-out infinite}
+@keyframes cueA{0%,100%{box-shadow:0 4px 0 #4a4034,0 8px 14px rgba(0,0,0,.55),0 0 0 0 rgba(243,220,168,0)}50%{box-shadow:0 4px 0 #4a4034,0 8px 14px rgba(0,0,0,.55),0 0 0 8px rgba(243,220,168,.25)}}
+.dpad button.cue,.ss button.cue{animation:cueD 1.3s ease-in-out infinite}
+@keyframes cueD{50%{box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 3px 0 #050404,0 0 0 4px rgba(243,220,168,.22)}}
+.ab div{position:relative}
+.abtip{position:absolute;left:50%;bottom:calc(100% + 14px);transform:translateX(-50%) rotate(24deg);white-space:nowrap;font-family:var(--chip);font-size:9px;letter-spacing:.08em;padding:5px 9px;border-radius:6px;background:var(--gold-hi);color:#1b1612;box-shadow:0 6px 16px rgba(0,0,0,.5);animation:tipbob 1.2s ease-in-out infinite;pointer-events:none}
+.abtip::after{content:"";position:absolute;left:50%;top:100%;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--gold-hi)}
+@keyframes tipbob{50%{margin-bottom:5px}}
+.ld{height:7px;border:1px solid rgba(216,192,143,.55);margin:6px 0 3px;padding:1px}
+.ld i{display:block;height:100%;width:0;background:var(--ph-acc);box-shadow:0 0 6px rgba(216,192,143,.6);animation:load 2.2s linear forwards}
+@keyframes load{to{width:100%}}
+.tc-go{font-size:15px;color:var(--ph-dim)}
+.flyer.dragging{transition:none;filter:drop-shadow(0 24px 30px rgba(0,0,0,.6))}
+body.dragging,body.dragging *{cursor:grabbing!important}
+body.dragging .slot{box-shadow:0 0 0 2px rgba(243,220,168,.55),0 0 26px rgba(243,220,168,.45)}
+.drop-hint{position:absolute;left:50%;top:-44px;transform:translateX(-50%);font-family:var(--chip);font-size:9px;letter-spacing:.14em;color:var(--gold-hi);opacity:0;transition:opacity .2s;white-space:nowrap}
+body.dragging .drop-hint{opacity:1}
+.console.drop{box-shadow:inset 0 2px 0 rgba(255,255,255,.07),inset 0 0 0 1px rgba(226,214,194,.3),0 0 0 2px rgba(243,220,168,.5),0 50px 90px rgba(0,0,0,.65)}
+.coach{position:absolute;right:0;top:-46px;z-index:5;display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;font-size:12px;color:#1b1612;background:var(--gold-hi);box-shadow:0 10px 24px rgba(0,0,0,.5);animation:tipbob 1.4s ease-in-out infinite}
+.coach::after{content:"";position:absolute;left:28px;top:100%;border:6px solid transparent;border-top-color:var(--gold-hi)}
+.coach b{font-family:var(--chip);font-weight:400;font-size:9px;letter-spacing:.1em}
+.carts{position:relative}
+.bigtype{-webkit-text-stroke-color:rgba(185,168,143,.06)}
+
 @media (max-width:1080px){
   .m-body{grid-template-columns:1fr}
   .rack.lit::before,.claw-zone.lit::before{display:none}
@@ -406,6 +453,8 @@ body.intro .bigtype,body.intro .floor{opacity:0}
 }
 @media (max-width:560px){
   .brand span{display:none}
+  .coach{top:-50px;left:0;right:auto}
+  .keys-note{display:none}
   .m-body{grid-template-columns:1fr;gap:24px}
   .bigtype{font-size:34vw}
   .floor{height:30vh}
@@ -440,16 +489,15 @@ body.intro .bigtype,body.intro .floor{opacity:0}
 <main class="stage">
   <!-- MAIN QUESTS: cartridge rack -->
   <section class="rack lit" aria-labelledby="rackLabel">
-    <div class="zone-label" id="rackLabel"><span data-en="MAIN QUESTS" data-zh="主线任务">MAIN QUESTS</span><i data-en="· SELECTED WORK" data-zh="· 精选作品">· SELECTED WORK</i></div>
+    <div class="zone-head"><span class="zone-n">01</span><div><div class="zone-label" id="rackLabel"><span>MAIN QUESTS</span><i>· SELECTED WORK</i></div><p>Click a cartridge, or drag it into the console, to play the project.</p></div></div>
     <div class="carts" id="carts"></div>
-    <p class="rack-note" data-en="Pick a cartridge to insert it into the console." data-zh="选一盒卡带，插进掌机开始游戏。">Pick a cartridge to insert it into the console.</p>
   </section>
 
   <!-- CONSOLE -->
   <div class="console-wrap lit">
     <div class="console" id="console">
       <span class="spec" id="spec"></span>
-      <div class="slot"></div>
+      <div class="slot"></div><span class="drop-hint">DROP TO PLAY ▼</span>
       <div class="slot-cart gone" id="slotCart" aria-hidden="true"><span class="cart-label"><img class="col" alt=""></span></div>
       <div class="bezel">
         <div class="bezel-tag">DOT MATRIX · INTERACTION SYSTEM</div>
@@ -467,7 +515,7 @@ body.intro .bigtype,body.intro .floor{opacity:0}
         </div>
         <div class="ab">
           <div><button data-k="b" aria-label="B, back">B</button><label>BACK</label></div>
-          <div><button data-k="a" aria-label="A, select">A</button><label>OK</label></div>
+          <div><span class="abtip" id="abTip" hidden>PRESS A</span><button data-k="a" aria-label="A, select">A</button><label>OK</label></div>
         </div>
         <div class="ss">
           <div><button data-k="select" aria-label="Select, quick view"></button><label>SELECT</label></div>
@@ -476,12 +524,12 @@ body.intro .bigtype,body.intro .floor{opacity:0}
       </div>
       <div class="grille" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
     </div>
-    <p class="hint keys" data-en="↑ ↓ ← → MOVE · ENTER / Z = A · ESC / X = B" data-zh="方向键 移动 · ENTER / Z = A 确认 · ESC / X = B 返回">↑ ↓ ← → MOVE · ENTER / Z = A · ESC / X = B</p>
+    <div class="prompts" id="prompts" aria-live="polite"></div>
   </div>
 
   <!-- SIDE QUESTS: claw machine -->
   <section class="claw-zone lit" aria-labelledby="clawLabel">
-    <div class="zone-label" id="clawLabel"><span data-en="SIDE QUESTS" data-zh="支线任务">SIDE QUESTS</span><i data-en="· MORE WORK" data-zh="· 更多作品">· MORE WORK</i></div>
+    <div class="zone-head"><span class="zone-n">02</span><div><div class="zone-label" id="clawLabel"><span>SIDE QUESTS</span><i>· MORE WORK</i></div><p>Aim with ◀ ▶ and press GRAB, or just click a capsule.</p></div></div>
     <div class="cabinet" id="cabinet">
       <div class="marquee"><div class="bulbs"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
         <b>CLAW · QUEST</b><span data-en="grab a capsule, open a project" data-zh="抓一颗扭蛋，打开一个作品">grab a capsule, open a project</span>
@@ -498,7 +546,6 @@ body.intro .bigtype,body.intro .floor{opacity:0}
         <button class="grab" id="grabBtn" data-en="GRAB" data-zh="抓！">GRAB</button>
       </div>
     </div>
-    <p class="claw-note" data-en="Steer with ◀ ▶ and press GRAB — or just tap a capsule." data-zh="用 ◀ ▶ 移动爪子再按「抓」，也可以直接点扭蛋。">Steer with ◀ ▶ and press GRAB — or just tap a capsule.</p>
   </section>
 </main>
 <div class="ticker" aria-hidden="true"><div class="tk"><span>GAME INTERACTION DESIGN<b>✦</b></span><span>PLAYTESTING<b>✦</b></span><span>RAPID PROTOTYPING<b>✦</b></span><span>UX RESEARCH<b>✦</b></span><span>LEVEL DESIGN<b>✦</b></span><span>UNITY · FIGMA · C4D<b>✦</b></span><span>NETEASE GAMES<b>✦</b></span><span>MA GAMES DESIGN · UAL<b>✦</b></span><span>LONDON<b>✦</b></span><span>GAME INTERACTION DESIGN<b>✦</b></span><span>PLAYTESTING<b>✦</b></span><span>RAPID PROTOTYPING<b>✦</b></span><span>UX RESEARCH<b>✦</b></span><span>LEVEL DESIGN<b>✦</b></span><span>UNITY · FIGMA · C4D<b>✦</b></span><span>NETEASE GAMES<b>✦</b></span><span>MA GAMES DESIGN · UAL<b>✦</b></span><span>LONDON<b>✦</b></span></div></div>
@@ -635,9 +682,44 @@ const sfx = {
 function buildCarts() {
   $('#carts').innerHTML = MAIN_KEYS.map((k, i) => {
     const P = ALL[k];
-    return `<button class="cart" data-cart="${k}" aria-label="${esc(P.en)}"><span class="cart-label"><img src="${DUO(k)}" alt="" loading="lazy"><img class="col" src="${COVER(k)}" alt="" loading="lazy"><span class="cart-name">${esc(P.en)}</span><i class="foil"></i></span><span class="cart-foot"><span>0${i + 1}</span><span>▲ INSERT</span></span></button>`;
+    return `<button class="cart" data-cart="${k}" aria-label="Play ${esc(P.en)}"><span class="cart-label"><span class="cart-art"><img src="${DUO(k)}" alt="" loading="lazy"><img class="col" src="${COVER(k)}" alt="" loading="lazy"><i class="foil"></i></span><span class="cart-strip"><b>${esc(P.en)}</b><em>${esc(KIND_MAIN[k][0])}</em></span></span><span class="cart-foot"><span>0${i + 1}</span><b>▶ PLAY</b></span></button>`;
   }).join('');
-  document.querySelectorAll('.cart').forEach(c => c.addEventListener('click', () => insertCart(c.dataset.cart)));
+  document.querySelectorAll('.cart').forEach(c => {
+    c.addEventListener('click', e => { if (dragged) { dragged = false; return; } insertCart(c.dataset.cart); });
+    c.addEventListener('pointerdown', e => startDrag(e, c));
+  });
+  if (!coached) { const t = document.createElement('div'); t.className = 'coach'; t.id = 'coach'; t.innerHTML = '<b>START HERE</b> Click a cartridge ↓'; $('#carts').appendChild(t); }
+}
+
+/* ---------- drag a cartridge into the slot (mouse) ---------- */
+let dragged = false, coached = false;
+try { coached = localStorage.getItem('ywp-coached') === '1'; } catch (e) {}
+function dismissCoach() { const t = $('#coach'); if (t) t.remove(); coached = true; try { localStorage.setItem('ywp-coached', '1'); } catch (e) {} }
+function startDrag(e, c) {
+  if (busy || e.pointerType !== 'mouse' || e.button !== 0) return;
+  const r = c.getBoundingClientRect(), sx = e.clientX, sy = e.clientY, con = $('#console');
+  let clone = null, over = false;
+  const move = ev => {
+    const dx = ev.clientX - sx, dy = ev.clientY - sy;
+    if (!clone) {
+      if (Math.hypot(dx, dy) < 8) return;
+      clone = c.cloneNode(true); clone.classList.add('flyer', 'dragging'); clone.classList.remove('hl');
+      Object.assign(clone.style, {left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px', margin: 0});
+      document.body.appendChild(clone); c.classList.add('out'); document.body.classList.add('dragging'); dragged = true; tone(520, .05);
+    }
+    clone.style.transform = `translate(${dx}px,${dy}px) rotate(${Math.max(-12, Math.min(12, dx * .03))}deg) scale(1.04)`;
+    const cr = con.getBoundingClientRect();
+    over = ev.clientX > cr.left - 40 && ev.clientX < cr.right + 40 && ev.clientY > cr.top - 120 && ev.clientY < cr.bottom;
+    con.classList.toggle('drop', over);
+  };
+  const up = () => {
+    removeEventListener('pointermove', move); removeEventListener('pointerup', up);
+    document.body.classList.remove('dragging'); con.classList.remove('drop');
+    if (!clone) return;
+    if (over) insertCart(c.dataset.cart, clone);
+    else { clone.style.transition = 'transform .35s cubic-bezier(.22,.8,.2,1)'; clone.style.transform = 'none'; sfx.back(); setTimeout(() => { clone.remove(); c.classList.remove('out'); }, 360); }
+  };
+  addEventListener('pointermove', move); addEventListener('pointerup', up);
 }
 
 /* ---------- console state machine ---------- */
@@ -666,12 +748,33 @@ const ACH = [
   ['Exhibited', '参展', 'Be Protagonist · In the Zone · The Fourth Death', 'Be Protagonist · In the Zone · The Fourth Death'],
   ['Piano · Level 10', '钢琴十级', 'Rhythm carried into motion design', '把节奏感带进动效设计'],
 ];
-let state = 'boot', cursor = 0, inserted = null, clawIdx = 4, busy = false;
+let state = 'boot', cursor = 0, inserted = null, clawIdx = 4, busy = false, autoload = false, autoT = null;
 
 function screenFlick() { const s = $('#screen'); s.classList.remove('flick'); void s.offsetWidth; s.classList.add('flick'); }
-function setState(s, c = 0) { state = s; cursor = c; screenFlick(); render(); }
+function setState(s, c = 0) { if (s !== 'title') { clearTimeout(autoT); autoload = false; } state = s; cursor = c; screenFlick(); render(); }
 
-function render() {
+const KC = (t, round) => `<i class="kc${round ? ' round' : ''}">${t}</i>`;
+const PROMPTS = {
+  boot: [['a', KC('A', 1), 'Power on']],
+  menu: [['down', KC('▲') + KC('▼'), 'Move'], ['a', KC('A', 1), 'Select'], ['select', KC('SELECT'), 'Quick view']],
+  mainlist: [['down', KC('▲') + KC('▼'), 'Choose'], ['a', KC('A', 1), 'Insert'], ['b', KC('B', 1), 'Back']],
+  title: [['a', KC('A', 1), 'Start now'], ['b', KC('B', 1), 'Eject']],
+  side: [['right', KC('◀') + KC('▶'), 'Aim claw'], ['a', KC('A', 1), 'Grab'], ['b', KC('B', 1), 'Back']],
+  save: [['b', KC('B', 1), 'Back']],
+  ach: [['down', KC('▲') + KC('▼'), 'Scroll'], ['b', KC('B', 1), 'Back']],
+  credits: [['down', KC('▲') + KC('▼'), 'Choose'], ['a', KC('A', 1), 'Open'], ['b', KC('B', 1), 'Back']],
+};
+const PRIMARY = {boot: 'a', menu: 'a', mainlist: 'a', title: 'a', side: 'a', save: 'b', ach: 'b', credits: 'a'};
+const finePointer = matchMedia('(hover: hover) and (pointer: fine)').matches;
+function paintPrompts() {
+  const list = PROMPTS[state] || [];
+  $('#prompts').innerHTML = list.map(([k, kc, l]) => `<button class="pr" data-press="${k}">${kc}${l}</button>`).join('') + (finePointer ? '<span class="keys-note">KEYBOARD · ARROWS MOVE · ENTER = A · ESC = B</span>' : '');
+  document.querySelectorAll('[data-k]').forEach(b => b.classList.toggle('cue', b.dataset.k === PRIMARY[state]));
+  $('#abTip').hidden = !(state === 'title' || state === 'boot');
+  $('#abTip').textContent = state === 'boot' ? 'PRESS A' : autoload ? 'OR PRESS A' : 'PRESS A';
+}
+function render() { renderScreen(); paintPrompts(); }
+function renderScreen() {
   const scr = $('#scr');
   scr.className = 'scr';
   document.querySelectorAll('.cart').forEach(c => c.classList.toggle('hl', state === 'mainlist' && c.dataset.cart === MAIN_KEYS[cursor]));
@@ -689,7 +792,7 @@ function render() {
   } else if (state === 'title') {
     const P = ALL[inserted], i = MAIN_KEYS.indexOf(inserted);
     scr.classList.add('title-card');
-    scr.innerHTML = `<div class="tc-img"><img data-dither="${COVER(inserted)}" data-size="160x72" alt=""></div><div class="tc-body"><span class="tc-k">QUEST 0${i + 1} · ${T(...KIND_MAIN[inserted])}</span><span class="tc-t">${esc(P.en)}</span>${P.zh ? `<span class="tc-k">${esc(P.zh)}</span>` : ''}<div class="foot"><span class="press">▶ A ${T('START', '开始')}</span><span>B ${T('EJECT', '退出')}</span></div></div>`;
+    scr.innerHTML = `<div class="tc-img"><img data-dither="${COVER(inserted)}" data-size="160x72" alt=""></div><div class="tc-body"><span class="tc-k">QUEST 0${i + 1} · ${T(...KIND_MAIN[inserted])}</span><span class="tc-t">${esc(P.en)}</span>${P.zh ? `<span class="tc-k">${esc(P.zh)}</span>` : ''}${autoload ? `<div class="ld"><i></i></div><span class="tc-go">Starting… press A to skip</span>` : `<span class="press">▶ Press A to play again</span>`}</div>`;
   } else if (state === 'side') {
     scr.classList.add('split');
     scr.innerHTML = `<h3><span>${T('SIDE QUESTS', '支线任务')}</span><span>${cursor + 1}/9</span></h3><ul class="list">${MORE_KEYS.map((k, i) => `<li><button class="item${i === cursor ? ' sel' : ''}" data-i="${i}">${esc(ALL[k].en)}</button></li>`).join('')}</ul><div class="pv"><img data-dither="${COVER(MORE_KEYS[cursor])}" data-size="72x100" alt=""></div><div class="foot"><span>A ${T('GRAB', '抓取')} →</span><span>B ${T('BACK', '返回')}</span></div>`;
@@ -749,7 +852,7 @@ function press(k, fromTouch) {
       sfx.ok(); const id = MENU[cursor].id;
       if (id === 'main') setState('mainlist'); else if (id === 'side') { setState('side', clawIdx); aimClaw(clawIdx); } else setState(id);
     } else if (state === 'mainlist') insertCart(MAIN_KEYS[cursor]);
-    else if (state === 'title') { sfx.ok(); const [x, y] = centerOf($('#screen')); irisOpen(inserted, x, y); }
+    else if (state === 'title') startInserted();
     else if (state === 'side') grab(cursor);
     else if (state === 'credits') {
       const act = ['mail', 'cv', 'site', 'menu'][cursor]; sfx.ok();
@@ -763,18 +866,19 @@ function copyEmail() {
 }
 
 /* ---------- insert / eject (cartridge flies into the slot) ---------- */
-async function insertCart(k) {
-  if (busy) return;
-  if (inserted === k && state === 'title') return;
+async function insertCart(k, fromEl) {
+  if (busy) { if (fromEl) fromEl.remove(); return; }
+  if (inserted === k && state === 'title') { if (fromEl) fromEl.remove(); startInserted(); return; }
   if (inserted) ejectCart(true);
+  dismissCoach();
   busy = true; inserted = k; sfx.insert();
   const src = document.querySelector(`.cart[data-cart="${k}"]`), slot = $('#slotCart');
   slot.querySelector('img').src = COVER(k);
   if (!reduce && src) {
-    const a = src.getBoundingClientRect(), b = slot.getBoundingClientRect();
-    const fly = src.cloneNode(true); fly.classList.add('flyer'); fly.classList.remove('hl');
-    Object.assign(fly.style, {left: a.left + 'px', top: a.top + 'px', width: a.width + 'px', height: a.height + 'px', margin: 0});
-    document.body.appendChild(fly); src.classList.add('out');
+    let fly, a; const b = slot.getBoundingClientRect();
+    if (fromEl) { a = fromEl.getBoundingClientRect(); fly = fromEl; fly.classList.remove('dragging'); fly.style.transition = 'none'; Object.assign(fly.style, {left: a.left + 'px', top: a.top + 'px', width: a.width + 'px', height: a.height + 'px', transform: 'none'}); void fly.offsetWidth; fly.style.transition = ''; }
+    else { a = src.getBoundingClientRect(); fly = src.cloneNode(true); fly.classList.add('flyer'); fly.classList.remove('hl'); Object.assign(fly.style, {left: a.left + 'px', top: a.top + 'px', width: a.width + 'px', height: a.height + 'px', margin: 0}); document.body.appendChild(fly); }
+    src.classList.add('out');
     const sx = b.width / a.width, dy = (b.top - 30) - a.top, dx = (b.left + b.width / 2) - (a.left + a.width / 2);
     requestAnimationFrame(() => { fly.style.transform = `translate(${dx}px,${dy}px) scale(${sx})`; });
     await wait(700);
@@ -783,7 +887,12 @@ async function insertCart(k) {
   } else if (src) src.classList.add('out');
   slot.classList.remove('gone');
   await wait(260);
-  busy = false; $('#led').classList.add('on'); setState('title');
+  busy = false; $('#led').classList.add('on'); autoload = true; setState('title');
+  clearTimeout(autoT); autoT = setTimeout(() => { if (state === 'title' && autoload && !busy && $('#manual').hidden) startInserted(); }, reduce ? 1200 : 2300);
+}
+function startInserted() {
+  clearTimeout(autoT); if (!inserted || busy || !$('#manual').hidden) return;
+  autoload = false; sfx.ok(); const [x, y] = centerOf($('#screen')); irisOpen(inserted, x, y); setTimeout(render, 900);
 }
 function ejectCart(silent) {
   const slot = $('#slotCart'); slot.classList.add('gone');
@@ -957,7 +1066,8 @@ $('#quick').addEventListener('click', e => { const c = e.target.closest('.q-card
 /* ---------- input ---------- */
 function flashKey(k) { const b = document.querySelector(`[data-k="${k}"]`); if (!b) return; b.classList.add('press'); setTimeout(() => b.classList.remove('press'), 120); }
 document.querySelectorAll('[data-k]').forEach(b => b.addEventListener('click', () => press(b.dataset.k, true)));
-$('#screen').addEventListener('click', e => { if (state === 'boot') press('a', true); });
+$('#prompts').addEventListener('click', e => { const b = e.target.closest('[data-press]'); if (b) { flashKey(b.dataset.press); press(b.dataset.press, true); } });
+$('#screen').addEventListener('click', e => { if (state === 'boot') press('a', true); else if (state === 'title' && !e.target.closest('.sheep')) startInserted(); });
 const KEYMAP = {ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right', Enter: 'a', ' ': 'a', z: 'a', Z: 'a', Escape: 'b', Backspace: 'b', x: 'b', X: 'b', s: 'start', S: 'start', Shift: 'select'};
 const KONAMI = ['up', 'up', 'down', 'down', 'left', 'right', 'left', 'right', 'b', 'a']; let kseq = [];
 addEventListener('keydown', e => {
